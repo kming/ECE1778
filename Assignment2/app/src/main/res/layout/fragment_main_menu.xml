@@ -1,0 +1,51 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingLeft="@dimen/mmLRPadding"
+    android:paddingRight="@dimen/mmLRPadding"
+    android:id="@+id/MainMenu"
+    tools:context="com.ece1778.keiming.assignment2.UI.Fragments.MainMenu">
+
+    <!-- Main Menu Fragment -->
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical">
+
+        <!-- Buttons in XML don't use onClick. Central Listener is used instead
+             Uses Buttons without a List layout since its not necessary for
+             only 5 buttons
+        -->
+        <Button
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/mm_add_string"
+            android:id="@+id/mmAddButton"/>
+        <Button
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/mm_view_string"
+            android:id="@+id/mmViewButton"
+            android:layout_below="@id/mmAddButton"/>
+        <Button
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/mm_store_string"
+            android:id="@+id/mmStoreButton"
+            android:layout_below="@id/mmViewButton"/>
+        <Button
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/mm_load_string"
+            android:id="@+id/mmLoadButton"
+            android:layout_below="@id/mmStoreButton"/>
+        <Button
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/mm_exit_string"
+            android:id="@+id/mmExitButton"
+            android:layout_below="@id/mmLoadButton"/>
+    </RelativeLayout>
+
+</FrameLayout>

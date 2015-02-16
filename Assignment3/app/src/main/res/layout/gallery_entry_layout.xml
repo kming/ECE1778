@@ -1,0 +1,35 @@
+<com.ece1778.keiming.assignment3.UI.RecyclerView.SquareGalleryEntry
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:padding="3dip" >
+
+    <ImageView
+        android:id="@+id/entryImage"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_centerInParent="true"
+        android:scaleType="centerCrop"
+        android:src="@drawable/ic_add" />
+
+    <TextView
+        android:id="@+id/entryPosition"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:gravity="center"
+        android:text="Position"
+        android:textSize="12sp"
+        android:background="#6AFFFFFF" />
+
+    <TextView
+        android:id="@+id/entryTitle"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/entryPosition"
+        android:gravity="center"
+        android:text="Title"
+        android:textSize="16sp"
+        android:background="#6AFFFFFF" />
+
+</com.ece1778.keiming.assignment3.UI.RecyclerView.SquareGalleryEntry>

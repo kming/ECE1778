@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Assignment2</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <!-- View Activity -->
+    <string name="action_add">add</string>
+
+    <!-- Main Menu Strings -->
+    <string name="mm_add_string">Enter Name</string>
+    <string name="mm_view_string">View Entries</string>
+    <string name="mm_store_string">Store Entries</string>
+    <string name="mm_load_string">Load Entries</string>
+    <string name="mm_exit_string">Exit</string>
+    <string name="title_activity_view">ViewActivity</string>
+
+    <!-- Add Menu Strings -->
+    <string name="am_title_string">Add Entry</string>
+    <string name="am_name_string">Name</string>
+    <string name="am_age_string">Age</string>
+    <string name="am_fav_food_string">Favourite Food</string>
+    <string name="am_cancel_string">Cancel</string>
+    <string name="am_add_string">Add</string>
+    <string name="am_done_string">Done</string>
+
+
+    <string-array name="food_array">
+        <item>Pizza</item>
+        <item>Burger</item>
+        <item>Ramen</item>
+        <item>Paper</item>
+        <item>Sushi</item>
+        <item>Vodka</item>
+        <item>Steak</item>
+        <item>Food</item>
+    </string-array>
+</resources>
