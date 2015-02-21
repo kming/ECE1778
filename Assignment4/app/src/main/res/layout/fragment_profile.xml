@@ -1,0 +1,46 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.ece1778.keiming.assignment4.UI.ProfileFragment">
+
+    <!-- TODO: Update blank fragment layout -->
+    <TextView
+        android:id="@+id/profile_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/hello_blank_fragment"
+        android:textAllCaps="true"
+        android:textSize="@dimen/abc_text_size_title_material" />
+
+    <RelativeLayout
+        android:id="@+id/profile_pic_block"
+        android:layout_width="match_parent"
+        android:layout_height="200dip"
+        android:layout_below="@id/profile_name">
+
+        <ProgressBar
+            android:id="@android:id/progress"
+            style="?android:attr/progressBarStyleLarge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"/>
+
+        <ImageView
+            android:id="@+id/profile_pic"
+            android:layout_width="match_parent"
+            android:layout_height="200dip"
+            android:scaleType="centerCrop"/>
+
+    </RelativeLayout>
+
+    <TextView
+        android:id="@+id/profile_bio"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/profile_pic_block"
+        android:text="@string/hello_blank_fragment"
+        android:textSize="@dimen/abc_text_size_body_1_material" />
+
+
+</RelativeLayout>

@@ -1,5 +1,7 @@
 package com.ece1778.keiming.assignment4.Utils;
 
+import com.ece1778.keiming.assignment4.BuildConfig;
+
 import java.util.Calendar;
 
 /**
@@ -21,4 +23,6 @@ public class GeneralUtils {
                 Integer.toString(Calendar.getInstance().get(Calendar.MINUTE));
 
     }
+
+
 }

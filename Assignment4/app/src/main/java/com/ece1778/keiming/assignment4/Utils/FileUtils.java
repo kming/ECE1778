@@ -18,6 +18,8 @@ import java.util.Date;
 import java.util.List;
 import android.provider.MediaStore.Files.FileColumns;
 
+import com.ece1778.keiming.assignment4.InternalClasses.Const;
+
 /**
  * Created by Kei-Ming on 2015-02-03.
  */
@@ -91,13 +93,12 @@ public class FileUtils {
 
     // Create a File for saving an image or video
     public static File getOutputMediaFile(int type){
-        // To be safe, you should check that the SDCard is mounted
-        // using Environment.getExternalStorageState() before doing this.
-
+        // To be safe, check to make sure external storage is mounted
+        if (Environment.getExternalStorageState() != Environment.MEDIA_MOUNTED) {
+            return null;
+        }
         File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_PICTURES), "Assignment3");
-        // This location works best if you want the created images to be shared
-        // between applications and persist after your app has been uninstalled.
+                Const.MEDIA_DIRECTORY), "Assignment3");
 
         // Create the storage directory if it does not exist
         if (! mediaStorageDir.exists()){
@@ -107,7 +108,7 @@ public class FileUtils {
             }
         }
 
-        // Create a media file name
+        // Create a media file with the time stamp in the filename
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         File mediaFile;
         if (type == FileColumns.MEDIA_TYPE_IMAGE){
@@ -119,7 +120,6 @@ public class FileUtils {
         } else {
             return null;
         }
-
         return mediaFile;
     }
 
