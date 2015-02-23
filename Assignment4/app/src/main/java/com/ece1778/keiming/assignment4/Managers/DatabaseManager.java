@@ -185,6 +185,36 @@ public class DatabaseManager extends SQLiteOpenHelper {
         return entry;
     }
 
+    // Only checks name to prevent duplicate
+    public boolean isInDatabase(String name) {
+
+        String checkQuery =
+                "SELECT  * FROM " + TABLE_ENTRIES
+                + " where " + COLUMN_NAME
+                + " = " + name;
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.query(TABLE_ENTRIES, new String[]{
+                COLUMN_ID,
+                COLUMN_NAME,
+                COLUMN_PATH,
+                COLUMN_NOTE
+            }
+            , COLUMN_NAME + "=?", new String[]{
+                name
+            }
+                , null, null, null, null);
+        int returnCount = cursor.getCount();
+        cursor.close();
+        db.close();
+
+        // return count
+        if (returnCount > 0) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     // Getting All Values
     public ArrayList<TableEntry> getAllValues() {
         ArrayList<TableEntry> entryList = new ArrayList<TableEntry>();

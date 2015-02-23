@@ -136,9 +136,17 @@ public class LauncherActivity extends ActionBarActivity {
             // Adding entries to the database
             String[] data = inputString.split("\n");
             for (int i = 0; i < data.length; i = i + 3) {
+
                 // Name, Location to Picture, Note/Bio
                 // adds the relative path to the base Url.
-                manager.addValue(new TableEntry(data[i], baseUri.resolve(data[i+2]).toString(), data[i+1]));
+                if (!manager.isInDatabase(data[i])) {
+                    manager.addValue(
+                            new TableEntry(
+                                    data[i],
+                                    baseUri.resolve(data[i + 2]).toString(),
+                                    data[i + 1]
+                    ));
+                }
             }
         }
     }
