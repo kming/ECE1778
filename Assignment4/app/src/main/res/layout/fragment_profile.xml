@@ -2,6 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:padding="@dimen/abc_control_padding_material"
     tools:context="com.ece1778.keiming.assignment4.UI.ProfileFragment">
 
     <!-- TODO: Update blank fragment layout -->
@@ -13,34 +14,48 @@
         android:textAllCaps="true"
         android:textSize="@dimen/abc_text_size_title_material" />
 
-    <RelativeLayout
-        android:id="@+id/profile_pic_block"
-        android:layout_width="match_parent"
-        android:layout_height="200dip"
-        android:layout_below="@id/profile_name">
-
-        <ProgressBar
-            android:id="@android:id/progress"
-            style="?android:attr/progressBarStyleLarge"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true"/>
-
-        <ImageView
-            android:id="@+id/profile_pic"
-            android:layout_width="match_parent"
-            android:layout_height="200dip"
-            android:scaleType="centerCrop"/>
-
-    </RelativeLayout>
-
-    <TextView
-        android:id="@+id/profile_bio"
-        android:layout_width="match_parent"
+    <ScrollView
+        android:id="@+id/SCROLLER_ID"
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/profile_pic_block"
-        android:text="@string/hello_blank_fragment"
-        android:textSize="@dimen/abc_text_size_body_1_material" />
+        android:layout_below="@id/profile_name"
+        android:fillViewport="true"
+        android:scrollbars="vertical">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <RelativeLayout
+                android:id="@+id/profile_pic_block"
+                android:layout_width="match_parent"
+                android:layout_height="200dip">
+
+                <ProgressBar
+                    android:id="@android:id/progress"
+                    style="?android:attr/progressBarStyleLarge"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true" />
+
+                <ImageView
+                    android:id="@+id/profile_pic"
+                    android:layout_width="match_parent"
+                    android:layout_height="200dip"
+                    android:scaleType="fitCenter" />
+
+            </RelativeLayout>
+
+
+            <TextView
+                android:id="@+id/profile_bio"
+                android:layout_below="@id/profile_pic_block"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/hello_blank_fragment"
+                android:textSize="@dimen/abc_text_size_body_1_material" />
+        </RelativeLayout>
+    </ScrollView>
 
 
 </RelativeLayout>

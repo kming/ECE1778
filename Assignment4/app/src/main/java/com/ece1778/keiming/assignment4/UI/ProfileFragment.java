@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.ece1778.keiming.assignment4.BuildConfig;
 import com.ece1778.keiming.assignment4.InternalClasses.TableEntry;
@@ -33,16 +34,15 @@ public class ProfileFragment extends Fragment {
 
     // TODO: Rename and change types of parameters
     private int mID;
+    private int mCount = 0;
 
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @return A new instance of fragment profileFragment.
-     */
-    // TODO: Rename and change types and number of parameters
+    public static ProfileFragment newInstance(int param1, int count) {
+        ProfileFragment pF = newInstance(param1);
+        pF.mCount = count;
+        return pF;
+    }
+
     public static ProfileFragment newInstance(int param1) {
         ProfileFragment fragment = new ProfileFragment();
         Bundle args = new Bundle();
@@ -61,6 +61,20 @@ public class ProfileFragment extends Fragment {
         if (getArguments() != null) {
             mID = getArguments().getInt(ARG_PROFILE_ID);
         }
+    }
+    @Override
+    public void onResume () {
+        super.onResume();
+     /*
+     // Really slow and doesn't show right number
+        if (mCount != 0) {
+            Toast.makeText(
+                    this.getActivity(),
+                    Integer.toString(mID-1)+"/"+Integer.toString(mCount),
+                    Toast.LENGTH_SHORT
+            ).show();
+        }
+    */
     }
 
     @Override

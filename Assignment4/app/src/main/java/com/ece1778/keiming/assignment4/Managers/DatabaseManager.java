@@ -106,7 +106,7 @@ public class DatabaseManager extends SQLiteOpenHelper {
     }
 
     // This deletes a database, but also sets up an empty database after
-    private void deleteDatabase() {
+    public void deleteDatabase() {
         mContext.deleteDatabase(DATABASE_NAME);
         manager = null;
         DatabaseManager.initManager(mContext);

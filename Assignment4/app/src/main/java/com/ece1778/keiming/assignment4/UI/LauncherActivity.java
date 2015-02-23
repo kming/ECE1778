@@ -48,6 +48,7 @@ public class LauncherActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         requestWindowFeature(Window.FEATURE_PROGRESS);
         super.onCreate(savedInstanceState);
+        setTitle("Assignment 4");
         setContentView(R.layout.activity_launcher);
         mContext = this;
         onDatabaseUpdate();
@@ -81,14 +82,12 @@ public class LauncherActivity extends ActionBarActivity {
                 onLoadClicked();
                 break;
             case R.id.view_database_button:
-                Toast.makeText(mContext, Long.toString(DatabaseManager.getManager(mContext).getAllValues().get(1).getID()), Toast.LENGTH_LONG).show();
-
                 Intent intent = new Intent(this, ViewActivity.class);
                 startActivity(intent);
-                Toast.makeText(this, "Database Viewed", Toast.LENGTH_SHORT).show();
                 break;
             case R.id.clear_database_button:
-                Toast.makeText(this, "Database Deleted.", Toast.LENGTH_SHORT).show();
+                DatabaseManager.getManager(this).deleteDatabase();
+                onDatabaseUpdate();
                 break;
         }
     }
@@ -174,8 +173,6 @@ public class LauncherActivity extends ActionBarActivity {
             }
         });
         alert.show();
-
-        Toast.makeText(this, "Database Loaded", Toast.LENGTH_SHORT).show();
     }
 
     // Private asynchronous task to load the database with the data
@@ -227,6 +224,7 @@ public class LauncherActivity extends ActionBarActivity {
             onDatabaseUpdate();
             mFetching = false;
             dialog.dismiss();
+            Toast.makeText(mContext, "Database Loaded", Toast.LENGTH_SHORT).show();
         }
     }
 

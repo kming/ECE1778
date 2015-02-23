@@ -1,26 +1,41 @@
 package com.ece1778.keiming.assignment4.UI;
 
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentStatePagerAdapter;
+import android.support.v4.view.PagerAdapter;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.Window;
 
+import com.ece1778.keiming.assignment4.InternalClasses.ZoomOutPageTransformer;
+import com.ece1778.keiming.assignment4.Managers.DatabaseManager;
 import com.ece1778.keiming.assignment4.R;
 
 public class ViewActivity extends ActionBarActivity {
+    private static int mNumPages=0;
+    private ViewPager mPager;
+    private PagerAdapter mPagerAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         requestWindowFeature(Window.FEATURE_PROGRESS);
         super.onCreate(savedInstanceState);
+
+        // Setup the aesthetics
+        setTitle("Profiles");
         setContentView(R.layout.activity_view);
-        ProfileFragment profileFragment = ProfileFragment.newInstance(1);
-        if (savedInstanceState == null) {
-            getSupportFragmentManager().beginTransaction()
-                    .add(R.id.container, profileFragment)
-                    .commit();
-        }
+
+        mNumPages = DatabaseManager.getManager(this).getValuesCount();
+
+        // Instantiate a ViewPager and a Pager Adapter
+        mPager = (ViewPager) findViewById(R.id.pager);
+        mPager.setPageTransformer(true, new ZoomOutPageTransformer());
+        mPagerAdapter = new ScreenSlidePagerAdapter(getSupportFragmentManager());
+        mPager.setAdapter(mPagerAdapter);
     }
 
 
@@ -44,5 +59,24 @@ public class ViewActivity extends ActionBarActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    /* Pager Adapter for the fragments */
+    private class ScreenSlidePagerAdapter extends FragmentStatePagerAdapter {
+
+        public ScreenSlidePagerAdapter(FragmentManager fm) {
+            super(fm);
+        }
+
+        @Override
+        public Fragment getItem(int position) {
+            // Position starts from 0, Database ID starts from 0
+            return ProfileFragment.newInstance(position+1, mNumPages);
+        }
+
+        @Override
+        public int getCount() {
+            return mNumPages;
+        }
     }
 }
