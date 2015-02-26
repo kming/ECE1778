@@ -1,9 +1,11 @@
-package com.ece1778.keiming.footprints;
+package com.ece1778.keiming.footprints.UI;
 
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+
+import com.ece1778.keiming.footprints.R;
 
 
 public class LauncherActivity extends ActionBarActivity {
