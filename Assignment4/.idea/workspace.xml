@@ -18,21 +18,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="b155924e-131c-475b-9f6c-c1a2046ec0fc" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/../Footprints/app/src/main/java/com/ece1778/keiming/footprints/Models/BaseDatabase.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/../Footprints/app/src/main/java/com/ece1778/keiming/footprints/Utils/FileUtils.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/../Footprints/app/src/main/java/com/ece1778/keiming/footprints/Utils/GeneralUtils.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/../Footprints/app/src/main/java/com/ece1778/keiming/footprints/Managers/LocationDBManager.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/../Footprints/app/src/main/java/com/ece1778/keiming/footprints/Managers/MarkerDBManager.java" />
-      <change type="DELETED" beforePath="C:\Users\Kei-Ming\AndroidStudioProjects\ECE1778\Footprints\.idea\libraries\appcompat_v7_21_0_3.xml" afterPath="" />
-      <change type="DELETED" beforePath="C:\Users\Kei-Ming\AndroidStudioProjects\ECE1778\Footprints\.idea\libraries\support_annotations_21_0_3.xml" afterPath="" />
-      <change type="DELETED" beforePath="C:\Users\Kei-Ming\AndroidStudioProjects\ECE1778\Footprints\.idea\libraries\support_v4_21_0_3.xml" afterPath="" />
-      <change type="MOVED" beforePath="C:\Users\Kei-Ming\AndroidStudioProjects\ECE1778\Footprints\app\src\main\java\com\ece1778\keiming\footprints\LauncherActivity.java" afterPath="$PROJECT_DIR$/../Footprints/app/src/main/java/com/ece1778/keiming/footprints/UI/LauncherActivity.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../Footprints/app/src/main/AndroidManifest.xml" afterPath="$PROJECT_DIR$/../Footprints/app/src/main/AndroidManifest.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../Footprints/Footprints.iml" afterPath="$PROJECT_DIR$/../Footprints/Footprints.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../Footprints/app/app.iml" afterPath="$PROJECT_DIR$/../Footprints/app/app.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../Footprints/.idea/misc.xml" afterPath="$PROJECT_DIR$/../Footprints/.idea/misc.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../Footprints/app/src/main/java/com/ece1778/keiming/footprints/Managers/LocationManager.java" afterPath="$PROJECT_DIR$/../Footprints/app/src/main/java/com/ece1778/keiming/footprints/Managers/LocationManager.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../Footprints/.idea/workspace.xml" afterPath="$PROJECT_DIR$/../Footprints/.idea/workspace.xml" />
     </list>
     <ignored path="Assignment4.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -124,8 +111,8 @@
       <file leaf-file-name="DatabaseManager.java" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/app/src/main/java/com/ece1778/keiming/assignment4/Managers/DatabaseManager.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.36761487" vertical-offset="2960" max-vertical-offset="4743">
-              <caret line="201" column="25" selection-start-line="201" selection-start-column="25" selection-end-line="201" selection-end-column="25" />
+            <state vertical-scroll-proportion="-0.11597374" vertical-offset="3215" max-vertical-offset="4743">
+              <caret line="203" column="13" selection-start-line="203" selection-start-column="13" selection-end-line="203" selection-end-column="13" />
               <folding />
             </state>
           </provider>
@@ -944,9 +931,6 @@
       <sortByType />
     </navigator>
     <panes>
-      <pane id="PackagesPane" />
-      <pane id="ProjectPane" />
-      <pane id="Scope" />
       <pane id="AndroidView">
         <subPane>
           <PATH>
@@ -1101,6 +1085,9 @@
           </PATH>
         </subPane>
       </pane>
+      <pane id="ProjectPane" />
+      <pane id="PackagesPane" />
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -1305,7 +1292,7 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1616" height="880" extended-state="6" />
-    <editor active="false" />
+    <editor active="true" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="15" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
@@ -1321,7 +1308,7 @@
       <window_info id="Android" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.32918397" sideWeight="0.7570694" order="11" side_tool="false" content_ui="tabs" />
       <window_info id="Gradle Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="12" side_tool="true" content_ui="tabs" />
       <window_info id="Designer" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.24935733" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.24935733" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Memory Monitor" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="14" side_tool="true" content_ui="tabs" />
       <window_info id="Gradle" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
@@ -1804,8 +1791,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/java/com/ece1778/keiming/assignment4/Managers/DatabaseManager.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.36761487" vertical-offset="2960" max-vertical-offset="4743">
-          <caret line="201" column="25" selection-start-line="201" selection-start-column="25" selection-end-line="201" selection-end-column="25" />
+        <state vertical-scroll-proportion="-0.11597374" vertical-offset="3215" max-vertical-offset="4743">
+          <caret line="203" column="13" selection-start-line="203" selection-start-column="13" selection-end-line="203" selection-end-column="13" />
           <folding />
         </state>
       </provider>
