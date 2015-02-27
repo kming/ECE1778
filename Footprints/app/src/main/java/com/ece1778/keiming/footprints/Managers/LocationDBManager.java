@@ -8,35 +8,43 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
 import com.ece1778.keiming.footprints.BuildConfig;
+import com.ece1778.keiming.footprints.Classes.LocTableEntry;
 import com.ece1778.keiming.footprints.Utils.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 
 /**
  * Created by Kei-Ming on 2015-02-24.
  */
 public class LocationDBManager extends SQLiteOpenHelper {
-    public static final String TABLE_ENTRIES = "table_entries"; // values is a keyword in sql :(
+    public static final String TABLE_ENTRIES = "table_entries";
+
+    // Table Columns
     public static final String COLUMN_ID = "id";
-    public static final String COLUMN_NAME = "Name";
-    public static final String COLUMN_PATH = "Path";
+    public static final String COLUMN_TIME = "time";
+    public static final String COLUMN_LOCATION = "location";
     public static final String COLUMN_NOTE = "note";
+
     // Database creation sql statement
     private static final String DATABASE_CREATE = "CREATE TABLE "
             + TABLE_ENTRIES
             + "("
             + COLUMN_ID + " integer primary key autoincrement,"
-            + COLUMN_NAME + " text not null,"
-            + COLUMN_PATH + " text not null,"
+            + COLUMN_TIME + " text not null,"
+            + COLUMN_LOCATION + " text not null,"
             + COLUMN_NOTE + " text not null"
             + ");";
+
     // Define Database Parameters
-    private static final String DATABASE_NAME = "entries.db";
+    private static final String DATABASE_NAME = "location.db";
     private static final int DATABASE_VERSION = 1;
+
     // Makes a singleton Database
     private static LocationDBManager manager = null;
     private static Context mContext = null;
+
     // Database Directories
     private static String DB_PATH = null;
     private static String BACKUP_DB_DIR = null;
@@ -140,12 +148,12 @@ public class LocationDBManager extends SQLiteOpenHelper {
     }
 
     // Adding new Table Entry Value to database
-    public void addValue(TableEntry entry) {
+    public void addValue(LocTableEntry entry) {
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
-        values.put(COLUMN_NAME, entry.getName());
-        values.put(COLUMN_PATH, entry.getPath());
+        values.put(COLUMN_TIME, entry.getTimeStamp());
+        values.put(COLUMN_LOCATION, entry.getLocation());
         values.put(COLUMN_NOTE, entry.getNote());
 
         // Inserting into database
@@ -154,15 +162,15 @@ public class LocationDBManager extends SQLiteOpenHelper {
     }
 
     // Getting single value
-    public TableEntry getValue(int id) {
+    public LocTableEntry getValue(int id) {
         SQLiteDatabase db = this.getReadableDatabase();
 
         // Uses a cursor to query from the database.
         // Provides the strings we want from the query and the query parameters
         Cursor cursor = db.query(TABLE_ENTRIES, new String[]{
                 COLUMN_ID,
-                COLUMN_NAME,
-                COLUMN_PATH,
+                COLUMN_TIME,
+                COLUMN_LOCATION,
                 COLUMN_NOTE
         }
                 , COLUMN_ID + "=?", new String[]{
@@ -170,9 +178,9 @@ public class LocationDBManager extends SQLiteOpenHelper {
         }
                 , null, null, null, null);
 
-        TableEntry entry = null;
+        LocTableEntry entry = null;
         if (cursor.moveToFirst()) {
-            entry = new TableEntry(
+            entry = new LocTableEntry(
                     Long.parseLong(cursor.getString(0)),    // ID
                     cursor.getString(1),                    // Location
                     cursor.getString(2),                    // Path
@@ -188,16 +196,16 @@ public class LocationDBManager extends SQLiteOpenHelper {
 
         String checkQuery =
                 "SELECT  * FROM " + TABLE_ENTRIES
-                        + " where " + COLUMN_NAME
+                        + " where " + COLUMN_TIME
                         + " = " + name;
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.query(TABLE_ENTRIES, new String[]{
                 COLUMN_ID,
-                COLUMN_NAME,
-                COLUMN_PATH,
+                COLUMN_TIME,
+                COLUMN_LOCATION,
                 COLUMN_NOTE
         }
-                , COLUMN_NAME + "=?", new String[]{
+                , COLUMN_TIME + "=?", new String[]{
                 name
         }
                 , null, null, null, null);
@@ -214,16 +222,16 @@ public class LocationDBManager extends SQLiteOpenHelper {
     }
 
     // Getting All Values
-    public ArrayList<TableEntry> getAllValues() {
-        ArrayList<TableEntry> entryList = new ArrayList<TableEntry>();
+    public ArrayList<LocTableEntry> getAllValues() {
+        ArrayList<LocTableEntry> entryList = new ArrayList<LocTableEntry>();
 
         SQLiteDatabase db = this.getWritableDatabase();
         // Uses a cursor to query from the database.
         // Provides the strings we want from the query and the query parameters
         Cursor cursor = db.query(TABLE_ENTRIES, new String[]{
                 COLUMN_ID,
-                COLUMN_NAME,
-                COLUMN_PATH,
+                COLUMN_TIME,
+                COLUMN_LOCATION,
                 COLUMN_NOTE
         }
                 , null, null, null, null, null, null);
@@ -231,7 +239,7 @@ public class LocationDBManager extends SQLiteOpenHelper {
         // looping through all rows and adding to list
         if (cursor.moveToFirst()) {
             do {
-                TableEntry tableEntry = new TableEntry(
+                LocTableEntry tableEntry = new LocTableEntry(
                         Long.parseLong(cursor.getString(0)),    // ID
                         cursor.getString(1),                    // Location
                         cursor.getString(2),                    // Path
@@ -261,12 +269,12 @@ public class LocationDBManager extends SQLiteOpenHelper {
     }
 
     // Updating single value
-    public int updateValue(TableEntry entry) {
+    public int updateValue(LocTableEntry entry) {
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
-        values.put(COLUMN_NAME, entry.getName());
-        values.put(COLUMN_PATH, entry.getPath());
+        values.put(COLUMN_TIME, entry.getTimeStamp());
+        values.put(COLUMN_LOCATION, entry.getLocation());
         values.put(COLUMN_NOTE, entry.getNote());
 
         // updating row
@@ -278,7 +286,7 @@ public class LocationDBManager extends SQLiteOpenHelper {
     }
 
     // Deleting single value
-    public void deleteValue(TableEntry entry) {
+    public void deleteValue(LocTableEntry entry) {
         SQLiteDatabase db = this.getWritableDatabase();
         db.delete(TABLE_ENTRIES, COLUMN_ID + " = ?",
                 new String[]{String.valueOf(entry.getID())});
