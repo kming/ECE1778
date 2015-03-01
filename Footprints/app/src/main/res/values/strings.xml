@@ -4,5 +4,10 @@
     <string name="app_name">Footprints</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
+    <string name="title_activity_maps">Map</string>
 
+    <string name="display_map_btn_message">Add Note</string>
+    <string name="add_btn_message">Add Note</string>
+    <string name="camera_btn_message">Add Photo</string>
+    <string name="voice_btn_message">Add Recording</string>
 </resources>

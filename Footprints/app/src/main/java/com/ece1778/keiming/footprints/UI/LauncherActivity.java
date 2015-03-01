@@ -1,9 +1,11 @@
 package com.ece1778.keiming.footprints.UI;
 
+import android.content.Intent;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 
 import com.ece1778.keiming.footprints.R;
 
@@ -14,6 +16,9 @@ public class LauncherActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_launcher);
+        Intent intent = new Intent(this, MapsActivity.class);
+        startActivity(intent);
+
     }
 
 
@@ -37,5 +42,10 @@ public class LauncherActivity extends ActionBarActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    public void goToMap(View v){
+        Intent intent = new Intent(this, MapsActivity.class);
+        startActivity(intent);
     }
 }
