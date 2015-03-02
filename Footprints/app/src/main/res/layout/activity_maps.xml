@@ -12,6 +12,14 @@
     tools:context="com.ece1778.keiming.footprints.UI.MapsActivity"
     android:name="com.google.android.gms.maps.SupportMapFragment" />
 
+    <Button
+        android:id="@+id/settings_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:text="Settings"
+        android:onClick="goToSettings"/>
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

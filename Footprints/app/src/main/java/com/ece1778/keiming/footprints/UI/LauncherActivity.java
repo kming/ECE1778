@@ -13,11 +13,13 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import com.ece1778.keiming.footprints.R;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationListener;
+import com.google.android.gms.location.LocationRequest;
 
 
 public class LauncherActivity extends ActionBarActivity {
     private static Context mContext = null;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

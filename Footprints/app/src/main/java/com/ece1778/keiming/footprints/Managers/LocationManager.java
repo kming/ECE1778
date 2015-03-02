@@ -113,20 +113,6 @@ public class LocationManager {
                 " , " + mCurrentLocation.getLongitude() + ")";
     }
 
-    public Double getLatitudeDouble () {
-        if (mCurrentLocation == null) {
-            return null;
-        }
-        return mCurrentLocation.getLatitude();
-    }
-
-    public Double getLongitudeDouble () {
-        if (mCurrentLocation == null) {
-            return null;
-        }
-        return mCurrentLocation.getLongitude();
-    }
-
     // Private Worker functions
     protected synchronized void buildGoogleApiClient() {
         int status = GooglePlayServicesUtil.isGooglePlayServicesAvailable(mContext);

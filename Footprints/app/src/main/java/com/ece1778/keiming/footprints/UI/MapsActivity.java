@@ -1,10 +1,21 @@
 package com.ece1778.keiming.footprints.UI;
 
+import android.content.Intent;
+import android.content.res.Configuration;
+import android.location.Location;
+import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.widget.DrawerLayout;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.Toast;
 
 import com.ece1778.keiming.footprints.Managers.LocationManager;
@@ -28,6 +39,7 @@ public class MapsActivity extends FragmentActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
         setUpMapIfNeeded();
+
     }
 
     @Override
@@ -66,14 +78,21 @@ public class MapsActivity extends FragmentActivity {
 
 
     private void setUpMap() {
-        //mMap.addMarker(new MarkerOptions().position(new LatLng(79.4,43.7)).title("Toronto"));
-        final double latitude = LocationManager.getHandler().getLatitudeDouble();
-        final double longitude = LocationManager.getHandler().getLongitudeDouble();
+        mMap.addMarker(new MarkerOptions().position(new LatLng(43.65,-79.4)).title("Toronto"));
+        //Location curLocation = LocationManager.getHandler().getLocation();
 
-        LatLng curLoc = new LatLng(latitude, longitude);
+        //final double longitude = curLocation.getLongitude();
+        //final double latitude = curLocation.getLatitude();
+
+        LatLng curLoc = new LatLng( 43.7,-79.4);
 
         mMap.setMyLocationEnabled(true);
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(curLoc, 13));
+    }
+
+    public void goToSettings(View v){
+            Intent intent = new Intent(this, SettingsActivity.class);
+            startActivity(intent);
     }
 
 }
