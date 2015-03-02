@@ -18,13 +18,18 @@ import com.google.android.gms.location.LocationServices;
  * Created by Kei-Ming on 2015-02-24.
  */
 public class LocationManager {
+    // Debugging Tag
+    private String TAG = LocationManager.class.getName();
+
     // Singleton Class Object Definition
     private static LocationManager locationManager = null;
 
-    // Debugging Tag
-    private String TAG = "Location Manager";
+    // private constructor for singleton class
+    private LocationManager() {
+    }
 
-    // PRIVATE CLASS VARIABLES
+    // PRIVATE CLASS VARIABLES - Location callbacks as well.
+    private LocationChangedListener mLocationChangedListener = null;
     private GoogleApiClient mGoogleApiClient = null;
     private Location mCurrentLocation = null;
     private boolean mRequestingLocationUpdates = false; // if location api is on this is true
@@ -58,24 +63,15 @@ public class LocationManager {
                 }
             };
 
-    // private constructor for singleton class
-    private LocationManager() {
-    }
 
-    // Public Interface Functions
-    // Initialize onCreate
-    public static void initHandler(Context context) {
-        if (locationManager == null) {
-            locationManager = new LocationManager();
-            locationManager.initInitialModels(context);
-            // 5sec fastest, 10sec normal, high accuracy
-            locationManager.setLocationRequest(10000, 5000, LocationRequest.PRIORITY_HIGH_ACCURACY);
-        }
-    }
-
+    // PUBLIC INTERFACE FUNCTIONS
     // get handler function
-    public static LocationManager getHandler() {
-        return locationManager;
+    public static LocationManager getManager(Context context) {
+        if (locationManager == null) {
+            return initManager(context);
+        } else {
+            return locationManager;
+        }
     }
 
     // Called on Resume
@@ -113,7 +109,18 @@ public class LocationManager {
                 " , " + mCurrentLocation.getLongitude() + ")";
     }
 
-    // Private Worker functions
+
+    // PRIVATE HELPER FUNCTIONS
+    // initialize the handler.  This should only be called if the location manager is null.
+    private static LocationManager initManager(Context context) {
+        locationManager = new LocationManager();
+        locationManager.initInitialModels(context);
+        // 5sec fastest, 10sec normal, high accuracy
+        locationManager.setLocationRequest(10000, 5000, LocationRequest.PRIORITY_HIGH_ACCURACY);
+        return locationManager;
+    }
+
+    // Initialize the google api client
     protected synchronized void buildGoogleApiClient() {
         int status = GooglePlayServicesUtil.isGooglePlayServicesAvailable(mContext);
         Log.d(TAG, "Google Play Services Status: " + Integer.toString(status));
@@ -168,7 +175,6 @@ public class LocationManager {
     protected void onConnected() {
         Log.d(TAG, "onConnected Connection Callback");
         startLocationUpdates();
-
         LocationManager.onResume();
     }
 
@@ -184,6 +190,18 @@ public class LocationManager {
     protected void onLocationChanged(Location location) {
         Log.d(TAG, "onConnectionChanged Listener");
         mCurrentLocation = location;
+        if (this.mLocationChangedListener != null) {
+            // Listener exists, call it
+            this.mLocationChangedListener.onChanged(location);
+        }
+    }
+
+    public static void setLocationChangedListener (LocationChangedListener listener) {
+        locationManager.mLocationChangedListener = listener;
+    }
+
+    public interface LocationChangedListener {
+        void onChanged (Location location);
     }
 }
 

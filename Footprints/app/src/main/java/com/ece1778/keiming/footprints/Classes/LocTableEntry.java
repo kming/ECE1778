@@ -5,7 +5,6 @@ package com.ece1778.keiming.footprints.Classes;
  */
 public class LocTableEntry {
 
-
     private long id;
     private String mTimeStamp;
     private String mLocation;

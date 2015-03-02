@@ -26,6 +26,7 @@ public class LocationDBManager extends SQLiteOpenHelper {
     public static final String COLUMN_TIME = "time";
     public static final String COLUMN_LOCATION = "location";
     public static final String COLUMN_NOTE = "note";
+    public static final String COLUMN_DIRTY = "dirty";
 
     // Database creation sql statement
     private static final String DATABASE_CREATE = "CREATE TABLE "
@@ -35,6 +36,7 @@ public class LocationDBManager extends SQLiteOpenHelper {
             + COLUMN_TIME + " text not null,"
             + COLUMN_LOCATION + " text not null,"
             + COLUMN_NOTE + " text not null"
+            + COLUMN_DIRTY + " text not null"
             + ");";
 
     // Define Database Parameters
@@ -155,14 +157,18 @@ public class LocationDBManager extends SQLiteOpenHelper {
         values.put(COLUMN_TIME, entry.getTimeStamp());
         values.put(COLUMN_LOCATION, entry.getLocation());
         values.put(COLUMN_NOTE, entry.getNote());
+        values.put(COLUMN_DIRTY, "true");
 
         // Inserting into database
         db.insert(TABLE_ENTRIES, null, values);
         db.close();
     }
 
-    // Getting single value
     public LocTableEntry getValue(int id) {
+        return this.getValue(id, false);
+    }
+    // Getting single value
+    public LocTableEntry getValue(int id, boolean update) {
         SQLiteDatabase db = this.getReadableDatabase();
 
         // Uses a cursor to query from the database.
@@ -171,7 +177,8 @@ public class LocationDBManager extends SQLiteOpenHelper {
                 COLUMN_ID,
                 COLUMN_TIME,
                 COLUMN_LOCATION,
-                COLUMN_NOTE
+                COLUMN_NOTE,
+                COLUMN_DIRTY
         }
                 , COLUMN_ID + "=?", new String[]{
                 String.valueOf(id)
@@ -188,6 +195,10 @@ public class LocationDBManager extends SQLiteOpenHelper {
             );
         }
         db.close();
+        // if the value is recently added, and you want to update update
+        if ((cursor.getString(4).contains("true")) && (update)) {
+            updateValue(entry, "false");
+        }
         return entry;
     }
 
@@ -233,6 +244,43 @@ public class LocationDBManager extends SQLiteOpenHelper {
                 COLUMN_TIME,
                 COLUMN_LOCATION,
                 COLUMN_NOTE
+        },
+                COLUMN_DIRTY + "=?", new String[]{
+                        "true"
+                }, null, null, null, null);
+
+        // looping through all rows and adding to list
+        if (cursor.moveToFirst()) {
+            do {
+                LocTableEntry tableEntry = new LocTableEntry(
+                        Long.parseLong(cursor.getString(0)),    // ID
+                        cursor.getString(1),                    // Location
+                        cursor.getString(2),                    // Path
+                        cursor.getString(3)                     // Note
+                );
+                // Adding contact to list
+                entryList.add(tableEntry);
+            } while (cursor.moveToNext());
+        }
+
+        db.close();
+        // return contact list
+        return entryList;
+    }
+
+    // Getting All Dirty Values
+    public ArrayList<LocTableEntry> getAllDirtyValues() {
+        ArrayList<LocTableEntry> entryList = new ArrayList<LocTableEntry>();
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        // Uses a cursor to query from the database.
+        // Provides the strings we want from the query and the query parameters
+        Cursor cursor = db.query(TABLE_ENTRIES, new String[]{
+                COLUMN_ID,
+                COLUMN_TIME,
+                COLUMN_LOCATION,
+                COLUMN_NOTE,
+                COLUMN_DIRTY
         }
                 , null, null, null, null, null, null);
 
@@ -245,6 +293,7 @@ public class LocationDBManager extends SQLiteOpenHelper {
                         cursor.getString(2),                    // Path
                         cursor.getString(3)                     // Note
                 );
+                updateValue(tableEntry, "false"); // Clean all dirty values
                 // Adding contact to list
                 entryList.add(tableEntry);
             } while (cursor.moveToNext());
@@ -269,13 +318,14 @@ public class LocationDBManager extends SQLiteOpenHelper {
     }
 
     // Updating single value
-    public int updateValue(LocTableEntry entry) {
+    public int updateValue(LocTableEntry entry, String dirty) {
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
         values.put(COLUMN_TIME, entry.getTimeStamp());
         values.put(COLUMN_LOCATION, entry.getLocation());
         values.put(COLUMN_NOTE, entry.getNote());
+        values.put(COLUMN_DIRTY, dirty);
 
         // updating row
         int result = db.update(TABLE_ENTRIES, values, COLUMN_ID + " = ?",

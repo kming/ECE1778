@@ -9,6 +9,7 @@ import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.DrawerLayout;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -18,6 +19,7 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.ece1778.keiming.footprints.BuildConfig;
 import com.ece1778.keiming.footprints.Managers.LocationManager;
 import com.ece1778.keiming.footprints.R;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -31,6 +33,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 public class MapsActivity extends FragmentActivity {
+    private static final String TAG = MapsActivity.class.getName();
 
     private GoogleMap mMap; // Might be null if Google Play services APK is not available.
 
@@ -38,6 +41,16 @@ public class MapsActivity extends FragmentActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+        // Set up location changed listener.
+        LocationManager.getManager(this);
+        LocationManager.setLocationChangedListener(new LocationManager.LocationChangedListener() {
+            @Override
+            public void onChanged(Location location) {
+                onLocationChanged(location);
+            }
+        });
+
+        // Set map up to a default location
         setUpMapIfNeeded();
 
     }
@@ -45,7 +58,26 @@ public class MapsActivity extends FragmentActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        LocationManager.getManager(this).onResume();
         setUpMapIfNeeded();
+    }
+
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        LocationManager.getManager(this).onPause();
+    }
+    @Override
+    protected void onStart() {
+        super.onStart();
+        LocationManager.getManager(this).onStart();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        LocationManager.getManager(this).onStop();
     }
 
     /**
@@ -78,13 +110,10 @@ public class MapsActivity extends FragmentActivity {
 
 
     private void setUpMap() {
+        if (BuildConfig.DEBUG) { Log.d(TAG, "Setup Map");}
         mMap.addMarker(new MarkerOptions().position(new LatLng(43.65,-79.4)).title("Toronto"));
-        //Location curLocation = LocationManager.getHandler().getLocation();
 
-        //final double longitude = curLocation.getLongitude();
-        //final double latitude = curLocation.getLatitude();
-
-        LatLng curLoc = new LatLng( 43.7,-79.4);
+        LatLng curLoc = new LatLng(43.65,-79.4);
 
         mMap.setMyLocationEnabled(true);
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(curLoc, 13));
@@ -95,4 +124,8 @@ public class MapsActivity extends FragmentActivity {
             startActivity(intent);
     }
 
+    private void onLocationChanged(Location location) {
+        if (BuildConfig.DEBUG) { Log.d (TAG, "Location Changed"); }
+        mMap.addMarker(new MarkerOptions().position(new LatLng(location.getLatitude(),location.getLongitude())).title("#1"));
+    }
 }
