@@ -79,10 +79,14 @@ public class MapsActivity extends FragmentActivity {
 
     private void setUpMap() {
         mMap.addMarker(new MarkerOptions().position(new LatLng(43.65,-79.4)).title("Toronto"));
-        //Location curLocation = LocationManager.getHandler().getLocation();
 
-        //final double longitude = curLocation.getLongitude();
-        //final double latitude = curLocation.getLatitude();
+        Location curLocation = LocationManager.getHandler().getLocation();
+
+        final double longitude = curLocation.getLongitude();
+        final double latitude = curLocation.getLatitude();
+
+        Toast.makeText(null, "latitude: " + latitude + " longitude: " + longitude, Toast.LENGTH_SHORT).show();
+
 
         LatLng curLoc = new LatLng( 43.7,-79.4);
 
