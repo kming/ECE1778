@@ -1,11 +1,21 @@
 package com.ece1778.keiming.footprints.UI;
 
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.LinearLayout;
+import android.widget.Toast;
 
+import com.ece1778.keiming.footprints.Managers.LocationManager;
 import com.ece1778.keiming.footprints.R;
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.GoogleMapOptions;
+import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
@@ -54,13 +64,16 @@ public class MapsActivity extends FragmentActivity {
         }
     }
 
-    /**
-     * This is where we can add markers or lines, add listeners or move the camera. In this case, we
-     * just add a marker near Africa.
-     * <p/>
-     * This should only be called once and when we are sure that {@link #mMap} is not null.
-     */
+
     private void setUpMap() {
-        mMap.addMarker(new MarkerOptions().position(new LatLng(79.4,43.7)).title("Toronto"));
+        //mMap.addMarker(new MarkerOptions().position(new LatLng(79.4,43.7)).title("Toronto"));
+        final double latitude = LocationManager.getHandler().getLatitudeDouble();
+        final double longitude = LocationManager.getHandler().getLongitudeDouble();
+
+        LatLng curLoc = new LatLng(latitude, longitude);
+
+        mMap.setMyLocationEnabled(true);
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(curLoc, 13));
     }
+
 }
