@@ -10,6 +10,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.ece1778.keiming.footprints.R;
@@ -25,6 +26,20 @@ public class LauncherActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_launcher);
+
+        Button viewBtn = (Button) findViewById(R.id.display_map_btn);
+        TextView message= (TextView) findViewById(R.id.connection_message);
+
+        if (haveNetworkConnection()) {
+            viewBtn.setEnabled(true);
+            viewBtn.setClickable(true);
+            message.setText("");
+        } else {
+            viewBtn.setEnabled(false);
+            viewBtn.setClickable(false);
+            message.setText("Connect to internet and enable location services first!");
+
+        }
 
     }
 
@@ -47,12 +62,8 @@ public class LauncherActivity extends ActionBarActivity {
 
     public void goToMap(View v){
 
-        if (!haveNetworkConnection()) {
-            Toast.makeText(mContext, "Enable internet and GPS then try again!", Toast.LENGTH_LONG).show();
-        } else {
-            Intent intent = new Intent(this, MapsActivity.class);
-            startActivity(intent);
-        }
+        Intent intent = new Intent(this, MapsActivity.class);
+        startActivity(intent);
 
     }
 }

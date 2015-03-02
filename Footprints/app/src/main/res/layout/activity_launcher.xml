@@ -13,5 +13,11 @@
         android:text="@string/display_map_btn_message"
         android:onClick="goToMap"/>
 
+    <TextView
+        android:id="@+id/connection_message"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/display_map_btn"
+        android:layout_centerHorizontal="true"/>
 
 </RelativeLayout>
