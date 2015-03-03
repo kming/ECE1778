@@ -62,7 +62,7 @@
                 android:value="com.ece1778.keiming.footprints.UI.MapsActivity" />
         </activity>
         <service android:name=".Services.TrackingService"
-            android:exported="false"/>
+            android:enabled="true"/>
     </application>
 
 </manifest>

@@ -1,7 +1,11 @@
 package com.ece1778.keiming.footprints.UI;
 
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.os.IBinder;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
@@ -14,6 +18,8 @@ import com.ece1778.keiming.footprints.R;
 import com.ece1778.keiming.footprints.Services.TrackingService;
 
 public class SettingsActivity extends ActionBarActivity {
+    TrackingService mService;
+    private boolean isBound;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,7 +29,10 @@ public class SettingsActivity extends ActionBarActivity {
         Switch mySwitch = (Switch) findViewById(R.id.locationTrackSwitch);
 
         final SharedPreferences preferences = getPreferences(MODE_PRIVATE);
-        boolean locationPref = preferences.getBoolean("locationPref", false);  //default is false
+        boolean locationPref = preferences.getBoolean("locationPref", false);
+        isBound=locationPref;
+
+         //default is false
         if (locationPref)
         {
             mySwitch.setChecked(true);
@@ -45,13 +54,19 @@ public class SettingsActivity extends ActionBarActivity {
                 SharedPreferences.Editor editor = preferences.edit();
                 editor.putBoolean("locationPref", true); // value to store
                 editor.commit();
+
+                bindService(myIntent, myConnection, Context.BIND_AUTO_CREATE);
+                isBound=true;
                 startService(myIntent);
 
             }else{
                 SharedPreferences.Editor editor = preferences.edit();
                 editor.putBoolean("locationPref", false); // value to store
                 editor.commit();
+                mService.pauseTracking();
+                isBound=false;
                 stopService(myIntent);
+                unbindService(myConnection);
             }
 
             }
@@ -64,6 +79,36 @@ public class SettingsActivity extends ActionBarActivity {
         }
         else {
             stopService(myIntent);
+        }
+
+
+
+
+    }
+
+    private ServiceConnection myConnection = new ServiceConnection() {
+
+        public void onServiceConnected(ComponentName className,
+                                       IBinder service) {
+            mService = ((TrackingService.SettingsBinder) service).getService();
+            isBound = true;
+        }
+
+        public void onServiceDisconnected(ComponentName arg0) {
+            isBound = false;
+        }
+
+    };
+
+    @Override
+    protected void onDestroy(){
+        super.onDestroy();
+        if (isBound) {
+            // Disconnect from an application service. You will no longer
+            // receive calls as the service is restarted, and the service is
+            // now allowed to stop at any time.
+            unbindService(myConnection);
+            isBound = false;
         }
     }
 

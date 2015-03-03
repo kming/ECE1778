@@ -3,6 +3,7 @@ package com.ece1778.keiming.footprints.Services;
 import android.app.Service;
 import android.content.Intent;
 import android.location.Location;
+import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
 import android.widget.Toast;
@@ -23,11 +24,12 @@ import java.sql.Timestamp;
  */
 public class TrackingService extends Service {
     private static final String TAG ="TrackingService";
-    private GoogleMap mMap;
+    //private GoogleMap mMap;
     private boolean isRunning = false;
 
     @Override
     public void onCreate(){
+        super.onCreate();
         if (BuildConfig.DEBUG){Log.d(TAG, "Service onCreate");}
         isRunning = true;
     }
@@ -51,6 +53,7 @@ public class TrackingService extends Service {
                         //LatLng curLoc = new LatLng(location.getLatitude(), location.getLongitude());
                         //Toast.makeText(null, "Location:" + curLoc, Toast.LENGTH_SHORT).show();
                     }
+
                 }stopSelf();
             }
         }).start();
@@ -58,15 +61,32 @@ public class TrackingService extends Service {
         return Service.START_STICKY;
     }
 
-    @Override
-    public IBinder onBind(Intent arg0){
-        if (BuildConfig.DEBUG){Log.d(TAG,"Service onBind");}
-        return null;
+    public class SettingsBinder extends Binder {
+        public TrackingService getService() {
+            return TrackingService.this;
+        }
     }
+    private final IBinder myBinder = new SettingsBinder();
+
+    @Override
+    public IBinder onBind(Intent arg0) {
+        // TODO Auto-generated method stub
+        return myBinder;
+        //if (BuildConfig.DEBUG){Log.d(TAG,"Service onBind");}
+        //return null;
+    }
+    public void pauseTracking() {
+        if(isRunning) {
+            //pause tracking
+        }
+
+    }
+
 
     @Override
     public void onDestroy(){
         isRunning = false;
         if (BuildConfig.DEBUG){Log.d(TAG,"Service onDestroy");}
+        super.onDestroy();
     }
 }
