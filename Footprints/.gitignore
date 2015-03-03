@@ -25,6 +25,12 @@ proguard/
 # Log Files
 *.log
 
+
+local.properties
+.idea/workspace.xml
+.idea/libraries
+.DS_Store
+
 # =========================
 # Operating System Files
 # =========================
