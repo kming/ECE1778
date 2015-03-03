@@ -24,11 +24,20 @@ public class GeneralUtils {
                 Integer.toString(Calendar.getInstance().get(Calendar.YEAR)) + " " +
                 Integer.toString(Calendar.getInstance().get(Calendar.HOUR_OF_DAY)) + ":" +
                 Integer.toString(Calendar.getInstance().get(Calendar.MINUTE));
-
     }
 
     public static String locationToString (Location location) {
         return  location.getLatitude() + "," +
                 location.getLongitude();
+    }
+    public static String timeMilliToString (long value) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(value);
+        int mYear = calendar.get(Calendar.YEAR);
+        int mMonth = calendar.get(Calendar.MONTH);
+        int mDay = calendar.get(Calendar.DAY_OF_MONTH);
+        int mHour = calendar.get(Calendar.HOUR_OF_DAY);
+        int mMin = calendar.get(Calendar.MINUTE);
+        return mMonth + "/" + mDay + "/" + mYear + " " + mHour + ":" + mMin;
     }
 }

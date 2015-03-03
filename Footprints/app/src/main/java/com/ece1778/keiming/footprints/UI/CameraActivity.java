@@ -72,9 +72,10 @@ public class CameraActivity extends ActionBarActivity {
     }
 
     private void onPictureCallback(Uri uri) {
-        //final String location = LocationManager.getHandler().getLocationString();
-        //final String dateTime = GeneralUtils.getDateTimeString();
-        //saveToGallery(location, uri.toString(), dateTime);
+        // After picture is taken, uri needs to be send to the POI Screen.
+        Intent i = new Intent(this, AddMarkerActivity.class);
+        i.putExtra(AddMarkerActivity.PIC_URI_KEY, uri.toString());
+        startActivity(i);
     }
 
    /* private void saveToGallery (final String location, final String uri, final String dateTimeNote) {

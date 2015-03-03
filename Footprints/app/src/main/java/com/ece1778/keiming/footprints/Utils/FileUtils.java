@@ -94,11 +94,8 @@ public class FileUtils {
     // Create a File for saving an image or video
     public static File getOutputMediaFile(int type){
         // To be safe, check to make sure external storage is mounted
-        if (Environment.getExternalStorageState() != Environment.MEDIA_MOUNTED) {
-            return null;
-        }
         File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
-                Const.MEDIA_DIRECTORY), "Assignment3");
+                Const.MEDIA_DIRECTORY), "FootPrints");
 
         // Create the storage directory if it does not exist
         if (! mediaStorageDir.exists()){

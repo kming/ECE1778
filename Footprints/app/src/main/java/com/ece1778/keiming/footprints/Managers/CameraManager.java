@@ -5,6 +5,7 @@ import android.content.Context;
 import android.hardware.Camera;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Debug;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
@@ -15,6 +16,8 @@ import com.ece1778.keiming.footprints.UI.CameraPreview;
 import com.ece1778.keiming.footprints.Utils.FileUtils;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 
 
 public class CameraManager {
@@ -36,9 +39,17 @@ public class CameraManager {
                 if (BuildConfig.DEBUG) { Log.d(TAG, "Error creating media file, check storage permissions"); }
                 return;
             }
-            //FileUtils.writeToFile(pictureFile, data);
-            //Log.d(TAG, "Path: " + pictureFile.getAbsolutePath().toString());
-            //Log.d(TAG, "Uri: " + Uri.fromFile(pictureFile).toString());
+            if (BuildConfig.DEBUG) {
+                Log.i (TAG, "Path: " + pictureFile.getAbsolutePath());
+                Log.i (TAG, "uri: " + Uri.fromFile(pictureFile).toString());
+            }
+            try {
+                FileUtils.writeToFile(pictureFile, data);
+            } catch (FileNotFoundException e ) {
+                if (BuildConfig.DEBUG) { Log.d(TAG, e.toString()); }
+            } catch (IOException e ) {
+                if (BuildConfig.DEBUG) { Log.d(TAG, e.toString()); }
+            }
             cameraInterface.onPictureTaken(Uri.fromFile(pictureFile));
         }
     };

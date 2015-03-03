@@ -11,5 +11,7 @@
     <string name="voice_btn_message">Add Recording</string>
     <string name="title_activity_settings">Settings Activity</string>
     <string name="title_activity_camera">CameraActivity</string>
+    <string name="title_activity_main">MainActivity</string>
+    <string name="title_activity_add_marker">AddMarkerActivity</string>
 
 </resources>

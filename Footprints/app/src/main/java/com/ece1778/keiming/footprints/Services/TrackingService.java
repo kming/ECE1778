@@ -23,7 +23,8 @@ import java.sql.Timestamp;
  * Created by Don Zhu on 03/03/2015.
  */
 public class TrackingService extends Service {
-    private static final String TAG ="TrackingService";
+    private static final String TAG =TrackingService.class.getName();
+
     //private GoogleMap mMap;
     private boolean isRunning = false;
 

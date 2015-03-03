@@ -25,17 +25,20 @@ import com.ece1778.keiming.footprints.Managers.LocationDBManager;
 import com.ece1778.keiming.footprints.Managers.LocationManager;
 import com.ece1778.keiming.footprints.R;
 import com.ece1778.keiming.footprints.Utils.GeneralUtils;
+import com.ece1778.keiming.footprints.Utils.OrientationUtils;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.GoogleMapOptions;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 
 public class MapsActivity extends FragmentActivity {
 
@@ -47,17 +50,21 @@ public class MapsActivity extends FragmentActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
 
+        // Lock the orientation
+        OrientationUtils.setOrientationPortrait(this);
+
+        // Set map up to a default location
+        setUpMapIfNeeded();
+
         // Set up location changed listener.
         LocationManager.getManager(this);
         LocationManager.setLocationChangedListener(new LocationManager.LocationChangedListener() {
             @Override
-            public void onChanged(Location location, Timestamp timestamp) {
-                onLocationChanged(location, timestamp);
+            public void onChanged(Location location) {
+                onLocationChanged(location);
             }
        });
 
-        // Set map up to a default location
-        setUpMapIfNeeded();
     }
     @Override
     protected void onPause() {
@@ -120,25 +127,60 @@ public class MapsActivity extends FragmentActivity {
     private void setUpMap() {
 
         if (BuildConfig.DEBUG) { Log.d(TAG, "Setup Map");}
-
         //Location location= LocationManager.getManager(this).getLocation();
         //LatLng curLoc = new LatLng(location.getLatitude(), location.getLongitude());
         LatLng curLoc = new LatLng(43.65,-79.4);
+
+        // populate the map.
+        populateLocations();
 
         mMap.setMyLocationEnabled(true);
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(curLoc, 13));
     }
 
     // On Location updated from the location manager, we need to add that to the database.
-    private void onLocationChanged(Location location, Timestamp timestamp) {
+    private void onLocationChanged(Location location) {
         if (BuildConfig.DEBUG) { Log.d (TAG, "Location Changed"); }
-        mMap.addMarker(new MarkerOptions().position(new LatLng(location.getLatitude(), location.getLongitude())).title("#1"));
 
+        double latitude = location.getLatitude();
+        double longitude = location.getLongitude();
+        String timeString = GeneralUtils.timeMilliToString(location.getTime());
+        mMap.addMarker(new MarkerOptions()
+                        .position(new LatLng(latitude, longitude))
+                        .title(timeString)
+                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.dot1))
+        );
         LocationDBManager.getManager(this).addValue(new LocTableEntry(
-            timestamp.toString(),
-            GeneralUtils.locationToString(location),
-            ""
+                timeString,
+                GeneralUtils.locationToString(location),
+                ""
         ));
+    }
+
+    private void populateLocations () {
+        if (LocationDBManager.getManager(this).getValuesCount() > 0) {
+            if (BuildConfig.DEBUG) { Log.d(TAG, "Populate Old Locations"); }
+            ArrayList<LocTableEntry> entries = LocationDBManager.getManager(this).getAllValues();
+
+            for (LocTableEntry entry : entries) {
+                String location = entry.getLocation();
+                String[] locationParts = location.split(",");
+                double latitude = Double.parseDouble(locationParts[0]);
+                double longitude = Double.parseDouble(locationParts[1]);
+                String titleString = entry.getTimeStamp();
+                if (BuildConfig.DEBUG) { Log.d(TAG, locationParts[0]+ "  " +  locationParts[1] ); }
+                mMap.addMarker(new MarkerOptions()
+                        .position(new LatLng(latitude, longitude))
+                        .title(titleString)
+                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.dot1))
+                );
+            }
+
+        }
+    }
+
+    private void populateMarker () {
+
     }
 
     public void goToSettings(View v){
