@@ -1,5 +1,7 @@
 package com.ece1778.keiming.footprints.Utils;
 
+import android.location.Location;
+
 import java.util.Calendar;
 
 /**
@@ -23,5 +25,10 @@ public class GeneralUtils {
                 Integer.toString(Calendar.getInstance().get(Calendar.HOUR_OF_DAY)) + ":" +
                 Integer.toString(Calendar.getInstance().get(Calendar.MINUTE));
 
+    }
+
+    public static String locationToString (Location location) {
+        return  location.getLatitude() + "," +
+                location.getLongitude();
     }
 }

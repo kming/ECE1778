@@ -20,8 +20,11 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import com.ece1778.keiming.footprints.BuildConfig;
+import com.ece1778.keiming.footprints.Classes.LocTableEntry;
+import com.ece1778.keiming.footprints.Managers.LocationDBManager;
 import com.ece1778.keiming.footprints.Managers.LocationManager;
 import com.ece1778.keiming.footprints.R;
+import com.ece1778.keiming.footprints.Utils.GeneralUtils;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.GoogleMapOptions;
@@ -31,6 +34,8 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+
+import java.sql.Timestamp;
 
 public class MapsActivity extends FragmentActivity {
 
@@ -42,13 +47,12 @@ public class MapsActivity extends FragmentActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
 
-
         // Set up location changed listener.
         LocationManager.getManager(this);
         LocationManager.setLocationChangedListener(new LocationManager.LocationChangedListener() {
             @Override
-            public void onChanged(Location location) {
-                onLocationChanged(location);
+            public void onChanged(Location location, Timestamp timestamp) {
+                onLocationChanged(location, timestamp);
             }
         });
 
@@ -113,16 +117,22 @@ public class MapsActivity extends FragmentActivity {
         if (BuildConfig.DEBUG) { Log.d(TAG, "Setup Map");}
         mMap.addMarker(new MarkerOptions().position(new LatLng(43.65,-79.4)).title("Toronto"));
 
-
         LatLng curLoc = new LatLng( 43.7,-79.4);
 
         mMap.setMyLocationEnabled(true);
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(curLoc, 13));
     }
 
-    private void onLocationChanged(Location location) {
+    // On Location updated from the location manager, we need to add that to the database.
+    private void onLocationChanged(Location location, Timestamp timestamp) {
         if (BuildConfig.DEBUG) { Log.d (TAG, "Location Changed"); }
-        mMap.addMarker(new MarkerOptions().position(new LatLng(location.getLatitude(),location.getLongitude())).title("#1"));
+        mMap.addMarker(new MarkerOptions().position(new LatLng(location.getLatitude(), location.getLongitude())).title("#1"));
+
+        LocationDBManager.getManager(this).addValue(new LocTableEntry(
+            timestamp.toString(),
+            GeneralUtils.locationToString(location),
+            ""
+        ));
     }
 
     public void goToSettings(View v){

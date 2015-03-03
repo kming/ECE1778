@@ -14,6 +14,15 @@ import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 
+import java.sql.Timestamp;
+
+
+/**
+ * Location Manager needs to handle several main key ideas.
+ *  1 - When the location changes, it needs to call the location changed listener.
+ *  2 - Instantiate Background workers to work on the location handling
+ *  3 - Needs an interface that allows adjustment of updates
+ */
 /**
  * Created by Kei-Ming on 2015-02-24.
  */
@@ -32,9 +41,13 @@ public class LocationManager {
     private LocationChangedListener mLocationChangedListener = null;
     private GoogleApiClient mGoogleApiClient = null;
     private Location mCurrentLocation = null;
+    private Location mPreviousLocation = null;
     private boolean mRequestingLocationUpdates = false; // if location api is on this is true
     private LocationRequest mLocationRequest = null;
     private Context mContext = null;
+    private int mFastInterval = 5000;
+    private int mInterval = 10000;
+    private static final int FAST_INTERVAL_DEFAULT = 5000;
 
     private GoogleApiClient.ConnectionCallbacks mLocationCallback =
             new GoogleApiClient.ConnectionCallbacks() {
@@ -64,8 +77,13 @@ public class LocationManager {
             };
 
 
-    // PUBLIC INTERFACE FUNCTIONS
-    // get handler function
+    /**
+     * PUBLIC INTERFACE FUNCTIONS
+     * onResume/onStart/onPause/onStop MUST be called, otherwise, it could result in no results
+     * being returned.
+     */
+
+    // Gets Singleton Manager
     public static LocationManager getManager(Context context) {
         if (locationManager == null) {
             return initManager(context);
@@ -74,52 +92,89 @@ public class LocationManager {
         }
     }
 
-    // Called on Resume
+    // Called on Resume - Needs to re-enable system.
     public static void onResume() {
         if (locationManager.mRequestingLocationUpdates == false) {
             locationManager.startLocationUpdates();
             locationManager.mRequestingLocationUpdates = true;
         }
     }
-
-    // Called on Pause
+    // Called on Pause - Needs to disable system. prevent hogging location services
     public static void onPause() {
         if (locationManager.mRequestingLocationUpdates == true) {
             locationManager.stopLocationUpdates();
             locationManager.mRequestingLocationUpdates = false;
         }
     }
-
+    // Connection of GoogleAPI Client
     public static void onStart() {
-        locationManager.mGoogleApiClient.connect();
+        if (!locationManager.mGoogleApiClient.isConnected()) {
+            locationManager.mGoogleApiClient.connect();
+        }
     }
     public static void onStop() {
-        locationManager.mGoogleApiClient.disconnect();
-    }
-    // Get Location
-    public Location getLocation() {
-        return mCurrentLocation;
+        if (locationManager.mGoogleApiClient.isConnected()) {
+            locationManager.mGoogleApiClient.disconnect();
+        }
     }
 
-    public String getLocationString () {
-        if (mCurrentLocation == null) {
+    public static String locToString(Location location) {
+        if (location == null) {
             return "";
         }
-        return  "(" + mCurrentLocation.getLatitude() +
-                " , " + mCurrentLocation.getLongitude() + ")";
+        return  "(" + location.getLatitude() +
+                " , " + location.getLongitude() + ")";
     }
 
+    /**
+     *  Get/Set Functions for internal information
+     */
+    // get current location
+    public Location getLocation() { return mCurrentLocation; }
+    // get previous location
+    public Location getmPreviousLocation() { return mPreviousLocation; }
+
+    // get string representing location
+    public String getLocationString () { return LocationManager.locToString(mCurrentLocation); }
+    // get string representing previous location
+    public String getPreviousLocationString () { return LocationManager.locToString(mPreviousLocation); }
+
+    // set the location request update times
+    public boolean setRefreshRate (int interval, int fastInterval) {
+        // the default fastest should be the lowest it can go.
+        if ((fastInterval > FAST_INTERVAL_DEFAULT) && (interval >= fastInterval)) {
+            if ((mInterval == interval)&&(mFastInterval == fastInterval)) {
+                return true; // same as original, don't need to change.
+            } else {
+                this.mFastInterval = fastInterval;
+                this.mInterval = interval;
+                updateRequest();
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Private Helper Functions
+     */
 
     // PRIVATE HELPER FUNCTIONS
     // initialize the handler.  This should only be called if the location manager is null.
     private static LocationManager initManager(Context context) {
         locationManager = new LocationManager();
         locationManager.initInitialModels(context);
-        // 5sec fastest, 10sec normal, high accuracy
-        locationManager.setLocationRequest(10000, 5000, LocationRequest.PRIORITY_HIGH_ACCURACY);
+        locationManager.setLocationRequest(
+                locationManager.mInterval,
+                locationManager.mFastInterval,
+                LocationRequest.PRIORITY_HIGH_ACCURACY
+        );
         return locationManager;
     }
 
+    private void updateRequest(){
+
+    }
     // Initialize the google api client
     protected synchronized void buildGoogleApiClient() {
         int status = GooglePlayServicesUtil.isGooglePlayServicesAvailable(mContext);
@@ -192,7 +247,8 @@ public class LocationManager {
         mCurrentLocation = location;
         if (this.mLocationChangedListener != null) {
             // Listener exists, call it
-            this.mLocationChangedListener.onChanged(location);
+            Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+            this.mLocationChangedListener.onChanged(location, timestamp);
         }
     }
 
@@ -201,7 +257,7 @@ public class LocationManager {
     }
 
     public interface LocationChangedListener {
-        void onChanged (Location location);
+        void onChanged (Location location, Timestamp timestamp);
     }
 }
 
