@@ -83,6 +83,11 @@ public class MapsActivity extends FragmentActivity {
         setUpMapIfNeeded();
     }
 
+    public void loadCamera (View view) {
+        Intent intent = new Intent(this, CameraActivity.class);
+        startActivity(intent);
+    }
+
     /**
      * Sets up the map if it is possible to do so (i.e., the Google Play services APK is correctly
      * installed) and the map has not already been instantiated.. This will ensure that we only ever
@@ -136,8 +141,8 @@ public class MapsActivity extends FragmentActivity {
     }
 
     public void goToSettings(View v){
-            Intent intent = new Intent(this, SettingsActivity.class);
-            startActivity(intent);
+        Intent intent = new Intent(this, SettingsActivity.class);
+        startActivity(intent);
     }
 
 }

@@ -18,13 +18,14 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.view.WindowManager;
 
+import com.ece1778.keiming.footprints.BuildConfig;
 import com.ece1778.keiming.footprints.R;
 
 import java.io.IOException;
 import java.util.List;
 
 public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback {
-    private final String TAG = "Camera Preview";
+    private final String TAG = CameraPreview.class.getName();
     private SurfaceHolder mHolder;
     private Camera mCamera;
     private Context mContext;
@@ -80,12 +81,9 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         Display display = ((WindowManager)mContext.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
 
         List<Camera.Size> sizes = parameters.getSupportedPictureSizes();
-        for (Camera.Size size : sizes) {
-            Log.i(TAG, "Available resolution: "+size.width+" "+size.height);
-        }
         parameters.setPictureFormat(ImageFormat.JPEG);
         parameters.setJpegQuality(100);
-        parameters.setPictureSize(2688, 1520);
+        parameters.setPictureSize(sizes.get(0).width, sizes.get(0).height); // largest size
         parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
 
         // parameter changes the picture EXIF orientation
@@ -110,7 +108,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             mCamera.startPreview();
 
         } catch (Exception e){
-            Log.d(TAG, "Error starting camera preview: " + e.getMessage());
+            if (BuildConfig.DEBUG) {Log.d(TAG, "Error starting camera preview: " + e.getMessage());}
         }
     }
 

@@ -35,7 +35,7 @@ public class LocationDBManager extends SQLiteOpenHelper {
             + COLUMN_ID + " integer primary key autoincrement,"
             + COLUMN_TIME + " text not null,"
             + COLUMN_LOCATION + " text not null,"
-            + COLUMN_NOTE + " text not null"
+            + COLUMN_NOTE + " text not null,"
             + COLUMN_DIRTY + " text not null"
             + ");";
 

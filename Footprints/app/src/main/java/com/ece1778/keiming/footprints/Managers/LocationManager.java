@@ -158,9 +158,7 @@ public class LocationManager {
     /**
      * Private Helper Functions
      */
-
-    // PRIVATE HELPER FUNCTIONS
-    // initialize the handler.  This should only be called if the location manager is null.
+    // Initialize the handler.  This should only be called if the location manager is null.
     private static LocationManager initManager(Context context) {
         locationManager = new LocationManager();
         locationManager.initInitialModels(context);
@@ -172,9 +170,13 @@ public class LocationManager {
         return locationManager;
     }
 
+    // Update Request - This should update the location request with the specific times.
     private void updateRequest(){
-
+        // start and stop the location updates.  They are responsible for checking and stopping.
+        stopLocationUpdates();
+        startLocationUpdates();
     }
+
     // Initialize the google api client
     protected synchronized void buildGoogleApiClient() {
         int status = GooglePlayServicesUtil.isGooglePlayServicesAvailable(mContext);
@@ -193,6 +195,7 @@ public class LocationManager {
         }
     }
 
+    // Initialize the internal models.
     protected void initInitialModels(Context context) {
         if (mContext == null) {
             mContext = context;
@@ -205,6 +208,7 @@ public class LocationManager {
         }
         mRequestingLocationUpdates = false;
     }
+
 
     protected void setLocationRequest(int interval, int fastestInterval, int priority) {
         mLocationRequest.setInterval(interval);
@@ -252,6 +256,9 @@ public class LocationManager {
         }
     }
 
+    /**
+     * LocationChanged Listeners
+     */
     public static void setLocationChangedListener (LocationChangedListener listener) {
         locationManager.mLocationChangedListener = listener;
     }
