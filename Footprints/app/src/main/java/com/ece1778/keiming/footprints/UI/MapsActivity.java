@@ -33,14 +33,16 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 public class MapsActivity extends FragmentActivity {
-    private static final String TAG = MapsActivity.class.getName();
 
+    private static final String TAG = MapsActivity.class.getName();
     private GoogleMap mMap; // Might be null if Google Play services APK is not available.
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+
+
         // Set up location changed listener.
         LocationManager.getManager(this);
         LocationManager.setLocationChangedListener(new LocationManager.LocationChangedListener() {
@@ -52,17 +54,7 @@ public class MapsActivity extends FragmentActivity {
 
         // Set map up to a default location
         setUpMapIfNeeded();
-
     }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        LocationManager.getManager(this).onResume();
-        setUpMapIfNeeded();
-    }
-
-
     @Override
     protected void onPause() {
         super.onPause();
@@ -78,6 +70,13 @@ public class MapsActivity extends FragmentActivity {
     protected void onStop() {
         super.onStop();
         LocationManager.getManager(this).onStop();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        LocationManager.getManager(this).onResume();
+        setUpMapIfNeeded();
     }
 
     /**
@@ -110,13 +109,20 @@ public class MapsActivity extends FragmentActivity {
 
 
     private void setUpMap() {
+
         if (BuildConfig.DEBUG) { Log.d(TAG, "Setup Map");}
         mMap.addMarker(new MarkerOptions().position(new LatLng(43.65,-79.4)).title("Toronto"));
 
-        LatLng curLoc = new LatLng(43.65,-79.4);
+
+        LatLng curLoc = new LatLng( 43.7,-79.4);
 
         mMap.setMyLocationEnabled(true);
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(curLoc, 13));
+    }
+
+    private void onLocationChanged(Location location) {
+        if (BuildConfig.DEBUG) { Log.d (TAG, "Location Changed"); }
+        mMap.addMarker(new MarkerOptions().position(new LatLng(location.getLatitude(),location.getLongitude())).title("#1"));
     }
 
     public void goToSettings(View v){
@@ -124,8 +130,4 @@ public class MapsActivity extends FragmentActivity {
             startActivity(intent);
     }
 
-    private void onLocationChanged(Location location) {
-        if (BuildConfig.DEBUG) { Log.d (TAG, "Location Changed"); }
-        mMap.addMarker(new MarkerOptions().position(new LatLng(location.getLatitude(),location.getLongitude())).title("#1"));
-    }
 }

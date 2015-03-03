@@ -10,5 +10,6 @@
     <string name="camera_btn_message">Add Photo</string>
     <string name="voice_btn_message">Add Recording</string>
     <string name="title_activity_settings">Settings Activity</string>
+    <string name="title_activity_camera">CameraActivity</string>
 
 </resources>
