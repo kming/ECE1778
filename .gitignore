@@ -25,10 +25,6 @@ proguard/
 # Log Files
 *.log
 
-local.properties
-.idea/workspace.xml
-.idea/libraries
-.DS_Store
 
 # =========================
 # Operating System Files
@@ -77,6 +73,7 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 *.iml
+
 Assignment3/.idea/libraries/cardview_v7_21_0_3.xml
 Assignment3/.idea/libraries/recyclerview_v7_21_0_3.xml
 Assignment3/.idea/libraries/recyclerview_v7_21_0_3.xml
