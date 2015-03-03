@@ -1,5 +1,6 @@
 package com.ece1778.keiming.footprints.UI;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
@@ -10,6 +11,7 @@ import android.widget.Switch;
 import android.widget.TextView;
 
 import com.ece1778.keiming.footprints.R;
+import com.ece1778.keiming.footprints.Services.TrackingService;
 
 public class SettingsActivity extends ActionBarActivity {
 
@@ -37,26 +39,31 @@ public class SettingsActivity extends ActionBarActivity {
             @Override
             public void onCheckedChanged(CompoundButton buttonView,
                                          boolean isChecked) {
+            Intent myIntent = new Intent(SettingsActivity.this,TrackingService.class);
 
-                if(isChecked){
-                    SharedPreferences.Editor editor = preferences.edit();
-                    editor.putBoolean("locationPref", true); // value to store
-                    editor.commit();
-                }else{
-                    SharedPreferences.Editor editor = preferences.edit();
-                    editor.putBoolean("locationPref", false); // value to store
-                    editor.commit();
-                }
+            if(isChecked){
+                SharedPreferences.Editor editor = preferences.edit();
+                editor.putBoolean("locationPref", true); // value to store
+                editor.commit();
+                startService(myIntent);
+
+            }else{
+                SharedPreferences.Editor editor = preferences.edit();
+                editor.putBoolean("locationPref", false); // value to store
+                editor.commit();
+                stopService(myIntent);
+            }
 
             }
         });
 
-        //check the current state before we display the screen
+        Intent myIntent = new Intent(SettingsActivity.this,TrackingService.class);
+        //check the current state to start or stop Tracking Service
         if(mySwitch.isChecked()){
-            //switchStatus.setText("Switch is currently ON");
+            startService(myIntent);
         }
         else {
-            //switchStatus.setText("Switch is currently OFF");
+            stopService(myIntent);
         }
     }
 

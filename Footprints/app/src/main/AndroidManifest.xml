@@ -61,6 +61,8 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.ece1778.keiming.footprints.UI.MapsActivity" />
         </activity>
+        <service android:name=".Services.TrackingService"
+            android:exported="false"/>
     </application>
 
 </manifest>
