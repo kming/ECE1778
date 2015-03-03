@@ -54,7 +54,7 @@ public class MapsActivity extends FragmentActivity {
             public void onChanged(Location location, Timestamp timestamp) {
                 onLocationChanged(location, timestamp);
             }
-        });
+       });
 
         // Set map up to a default location
         setUpMapIfNeeded();
@@ -120,9 +120,10 @@ public class MapsActivity extends FragmentActivity {
     private void setUpMap() {
 
         if (BuildConfig.DEBUG) { Log.d(TAG, "Setup Map");}
-        mMap.addMarker(new MarkerOptions().position(new LatLng(43.65,-79.4)).title("Toronto"));
 
-        LatLng curLoc = new LatLng( 43.7,-79.4);
+        //Location location= LocationManager.getManager(this).getLocation();
+        //LatLng curLoc = new LatLng(location.getLatitude(), location.getLongitude());
+        LatLng curLoc = new LatLng(43.65,-79.4);
 
         mMap.setMyLocationEnabled(true);
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(curLoc, 13));
