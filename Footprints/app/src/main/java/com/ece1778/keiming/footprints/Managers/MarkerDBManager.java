@@ -37,9 +37,9 @@ public class MarkerDBManager extends SQLiteOpenHelper {
             + COLUMN_ID + " integer primary key autoincrement,"
             + COLUMN_TIME + " text not null,"
             + COLUMN_LOCATION + " text not null,"
-            + COLUMN_PICTURE + " text not null,"
-            + COLUMN_AUDIO + " text not null,"
-            + COLUMN_NOTE + " text not null"
+            + COLUMN_PICTURE + " text,"
+            + COLUMN_AUDIO + " text,"
+            + COLUMN_NOTE + " text"
             + ");";
 
     // Define Database Parameters
@@ -166,6 +166,8 @@ public class MarkerDBManager extends SQLiteOpenHelper {
         // Inserting into database
         db.insert(TABLE_ENTRIES, null, values);
         db.close();
+
+        if (BuildConfig.DEBUG) { Log.d (TAG, "Add Value" + entry.getLocation()); }
     }
 
     // Getting single value
@@ -243,6 +245,8 @@ public class MarkerDBManager extends SQLiteOpenHelper {
         // Provides the strings we want from the query and the query parameters
         Cursor cursor = db.query(TABLE_ENTRIES, new String[]{
                 COLUMN_ID,
+                COLUMN_PICTURE,
+                COLUMN_AUDIO,
                 COLUMN_TIME,
                 COLUMN_LOCATION,
                 COLUMN_NOTE
@@ -265,6 +269,7 @@ public class MarkerDBManager extends SQLiteOpenHelper {
             } while (cursor.moveToNext());
         }
 
+        if (BuildConfig.DEBUG) { Log.d (TAG, "getArray" + Integer.toString(entryList.size())); }
         db.close();
         // return contact list
         return entryList;
@@ -280,6 +285,7 @@ public class MarkerDBManager extends SQLiteOpenHelper {
         db.close();
 
         // return count
+        if (BuildConfig.DEBUG) { Log.d (TAG, "Get Count" + Integer.toString(returnValue)); }
         return returnValue;
     }
 

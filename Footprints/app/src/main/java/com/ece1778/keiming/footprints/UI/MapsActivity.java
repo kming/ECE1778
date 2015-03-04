@@ -3,6 +3,7 @@ package com.ece1778.keiming.footprints.UI;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.location.Location;
+import android.os.Build;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -91,15 +92,14 @@ public class MapsActivity extends FragmentActivity {
         super.onResume();
         LocationManager.getManager(this).onResume();
         setUpMapIfNeeded();
+
+        // populate the map.
+        populateLocations();
+        populateMarker();
     }
 
     public void loadCamera (View view) {
         Intent intent = new Intent(this, CameraActivity.class);
-        startActivity(intent);
-    }
-
-    public void loadAudioRecorder (View view) {
-        Intent intent = new Intent(this, AudioRecordActivity.class);
         startActivity(intent);
     }
 
@@ -122,12 +122,10 @@ public class MapsActivity extends FragmentActivity {
 
         if (BuildConfig.DEBUG) { Log.d(TAG, "Setup Map");}
         Location location= LocationManager.getManager(this).getLocation();
-        LatLng curLoc = new LatLng(location.getLatitude(), location.getLongitude());
-        //LatLng curLoc = new LatLng(43.65,-79.4);
+        //TODO: MAKE SURE TO SAVE LAST KNOWN LOCATION in LOCATION MANAGER
+        //LatLng curLoc = new LatLng(location.getLatitude(), location.getLongitude());
+        LatLng curLoc = new LatLng(43.65,-79.4);
 
-        // populate the map.
-        populateLocations();
-        populateMarker();
 
         mMap.setMyLocationEnabled(true);
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(curLoc, 13));
@@ -173,17 +171,18 @@ public class MapsActivity extends FragmentActivity {
                         .anchor(0,mid)
                 );
             }
-
         }
     }
 
     private void populateMarker () {
         if (MarkerDBManager.getManager(this).getValuesCount() > 0) {
-            if (BuildConfig.DEBUG) { Log.d(TAG, "Populate Markers"); }
+            if (BuildConfig.DEBUG) { Log.d(TAG, "Populate Old Markers"); }
             ArrayList<MarkerTableEntry> entries = MarkerDBManager.getManager(this).getAllValues();
 
             for (MarkerTableEntry entry : entries) {
                 String location = entry.getLocation();
+
+                if (BuildConfig.DEBUG) { Log.d(TAG, location ); }
                 String[] locationParts = location.split(",");
                 double latitude = Double.parseDouble(locationParts[0]);
                 double longitude = Double.parseDouble(locationParts[1]);
@@ -194,14 +193,34 @@ public class MapsActivity extends FragmentActivity {
                                 .title(titleString)
                 );
             }
-
         }
-
     }
 
     public void goToSettings(View v){
         Intent intent = new Intent(this, SettingsActivity.class);
         startActivity(intent);
+    }
+
+    public void addMarker (View v) {
+        Location location= LocationManager.getManager(this).getLocation();
+        // Add Marker without picture.
+        if (location != null) {
+
+            String timeString = GeneralUtils.timeMilliToString(location.getTime());
+
+            if (BuildConfig.DEBUG) { Log.d(TAG, "Add Marker " +
+                    GeneralUtils.locationToString(location)); }
+            Intent i = new Intent(this, AddMarkerActivity.class);
+            i.putExtra(AddMarkerActivity.LOCATION_KEY, GeneralUtils.locationToString(location));
+            i.putExtra(AddMarkerActivity.TIMESTAMP_KEY, timeString);
+
+            startActivity(i);
+        }
+    }
+
+    public void loadAudioRecorder (View v) {
+        Intent i = new Intent(this, AudioRecordActivity.class);
+        startActivity(i);
     }
 
 }
