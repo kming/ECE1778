@@ -1,6 +1,7 @@
 package com.ece1778.keiming.footprints.UI;
 
         import android.app.Activity;
+        import android.content.Intent;
         import android.widget.LinearLayout;
         import android.os.Bundle;
         import android.os.Environment;
@@ -13,6 +14,8 @@ package com.ece1778.keiming.footprints.UI;
         import android.media.MediaRecorder;
         import android.media.MediaPlayer;
 
+        import com.ece1778.keiming.footprints.R;
+
         import java.io.IOException;
 
 
@@ -21,11 +24,17 @@ public class AudioRecordActivity extends Activity
     private static final String LOG_TAG = "AudioRecordTest";
     private static String mFileName = null;
 
-    private RecordButton mRecordButton = null;
     private MediaRecorder mRecorder = null;
-
-    private PlayButton   mPlayButton = null;
     private MediaPlayer   mPlayer = null;
+    private boolean mStartPlaying = false;
+    private boolean mStartRecording = false;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_audio_record);
+
+    }
 
     private void onRecord(boolean start) {
         if (start) {
@@ -62,7 +71,7 @@ public class AudioRecordActivity extends Activity
     private void startRecording() {
         mRecorder = new MediaRecorder();
         mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-        mRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
+        mRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
         mRecorder.setOutputFile(mFileName);
         mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
 
@@ -79,76 +88,44 @@ public class AudioRecordActivity extends Activity
         mRecorder.stop();
         mRecorder.release();
         mRecorder = null;
+
+
     }
 
-    class RecordButton extends Button {
-        boolean mStartRecording = true;
+    public void startStopRecording(View view){
 
-        OnClickListener clicker = new OnClickListener() {
-            public void onClick(View v) {
-                onRecord(mStartRecording);
-                if (mStartRecording) {
-                    setText("Stop recording");
-                } else {
-                    setText("Start recording");
-                }
-                mStartRecording = !mStartRecording;
-            }
-        };
+        Button btn=(Button) findViewById(R.id.playback_btn);
+        onRecord(mStartRecording);
 
-        public RecordButton(Context ctx) {
-            super(ctx);
-            setText("Start recording");
-            setOnClickListener(clicker);
+        if (mStartRecording) {
+            btn.setText("Stop recording");
+
+        } else {
+            btn.setText("Start recording");
         }
+        mStartRecording = !mStartRecording;
     }
 
-    class PlayButton extends Button {
-        boolean mStartPlaying = true;
+    public void playBackButton(View view){
 
-        OnClickListener clicker = new OnClickListener() {
-            public void onClick(View v) {
-                onPlay(mStartPlaying);
-                if (mStartPlaying) {
-                    setText("Stop playing");
-                } else {
-                    setText("Start playing");
-                }
-                mStartPlaying = !mStartPlaying;
-            }
-        };
-
-        public PlayButton(Context ctx) {
-            super(ctx);
-            setText("Start playing");
-            setOnClickListener(clicker);
+        Button btn=(Button) findViewById(R.id.start_record_btn);
+        onPlay(mStartPlaying);
+        if (mStartPlaying) {
+            btn.setText("Stop playing");
+        } else {
+            btn.setText("Start playing");
         }
+        mStartPlaying = !mStartPlaying;
+
     }
+
 
     public AudioRecordActivity() {
         mFileName = Environment.getExternalStorageDirectory().getAbsolutePath();
         mFileName += "/audiorecordtest.3gp";
     }
 
-    @Override
-    public void onCreate(Bundle icicle) {
-        super.onCreate(icicle);
 
-        LinearLayout ll = new LinearLayout(this);
-        mRecordButton = new RecordButton(this);
-        ll.addView(mRecordButton,
-                new LinearLayout.LayoutParams(
-                        ViewGroup.LayoutParams.WRAP_CONTENT,
-                        ViewGroup.LayoutParams.WRAP_CONTENT,
-                        0));
-        mPlayButton = new PlayButton(this);
-        ll.addView(mPlayButton,
-                new LinearLayout.LayoutParams(
-                        ViewGroup.LayoutParams.WRAP_CONTENT,
-                        ViewGroup.LayoutParams.WRAP_CONTENT,
-                        0));
-        setContentView(ll);
-    }
 
     @Override
     public void onPause() {
@@ -162,5 +139,16 @@ public class AudioRecordActivity extends Activity
             mPlayer.release();
             mPlayer = null;
         }
+    }
+
+    public void cancelSaveAudio(View view){
+        Intent intent = new Intent(this, MapsActivity.class);
+        startActivity(intent);
+    }
+
+    public void continueSavingAudio(View view){
+        Intent i = new Intent(this, AddMarkerActivity.class);
+        //i.putExtra(AddMarkerActivity.AUDIO_URI_KEY, uri.toString());
+        startActivity(i);
     }
 }
