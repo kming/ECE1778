@@ -21,8 +21,10 @@ import android.widget.Toast;
 
 import com.ece1778.keiming.footprints.BuildConfig;
 import com.ece1778.keiming.footprints.Classes.LocTableEntry;
+import com.ece1778.keiming.footprints.Classes.MarkerTableEntry;
 import com.ece1778.keiming.footprints.Managers.LocationDBManager;
 import com.ece1778.keiming.footprints.Managers.LocationManager;
+import com.ece1778.keiming.footprints.Managers.MarkerDBManager;
 import com.ece1778.keiming.footprints.R;
 import com.ece1778.keiming.footprints.Utils.GeneralUtils;
 import com.ece1778.keiming.footprints.Utils.OrientationUtils;
@@ -96,6 +98,11 @@ public class MapsActivity extends FragmentActivity {
         startActivity(intent);
     }
 
+    public void loadAudioRecorder (View view) {
+        Intent intent = new Intent(this, AudioRecordActivity.class);
+        startActivity(intent);
+    }
+
 
     private void setUpMapIfNeeded() {
         // Do a null check to confirm that we have not already instantiated the map.
@@ -114,12 +121,13 @@ public class MapsActivity extends FragmentActivity {
     private void setUpMap() {
 
         if (BuildConfig.DEBUG) { Log.d(TAG, "Setup Map");}
-        //Location location= LocationManager.getManager(this).getLocation();
-        //LatLng curLoc = new LatLng(location.getLatitude(), location.getLongitude());
-        LatLng curLoc = new LatLng(43.65,-79.4);
+        Location location= LocationManager.getManager(this).getLocation();
+        LatLng curLoc = new LatLng(location.getLatitude(), location.getLongitude());
+        //LatLng curLoc = new LatLng(43.65,-79.4);
 
         // populate the map.
         populateLocations();
+        populateMarker();
 
         mMap.setMyLocationEnabled(true);
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(curLoc, 13));
@@ -170,6 +178,24 @@ public class MapsActivity extends FragmentActivity {
     }
 
     private void populateMarker () {
+        if (MarkerDBManager.getManager(this).getValuesCount() > 0) {
+            if (BuildConfig.DEBUG) { Log.d(TAG, "Populate Markers"); }
+            ArrayList<MarkerTableEntry> entries = MarkerDBManager.getManager(this).getAllValues();
+
+            for (MarkerTableEntry entry : entries) {
+                String location = entry.getLocation();
+                String[] locationParts = location.split(",");
+                double latitude = Double.parseDouble(locationParts[0]);
+                double longitude = Double.parseDouble(locationParts[1]);
+                String titleString = entry.getTime();
+                if (BuildConfig.DEBUG) { Log.d(TAG, locationParts[0]+ "  " +  locationParts[1] ); }
+                mMap.addMarker(new MarkerOptions()
+                                .position(new LatLng(latitude, longitude))
+                                .title(titleString)
+                );
+            }
+
+        }
 
     }
 

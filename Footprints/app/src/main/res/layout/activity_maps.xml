@@ -60,7 +60,8 @@
             android:src="@drawable/audio"
             android:adjustViewBounds="true"
             android:scaleType="fitCenter"
-            android:background="@null"/>
+            android:background="@null"
+            android:onClick="loadAudioRecorder"/>
 
     </LinearLayout>
 

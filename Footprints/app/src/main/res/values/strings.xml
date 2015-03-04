@@ -14,5 +14,6 @@
     <string name="title_activity_main">MainActivity</string>
     <string name="title_activity_add_marker">AddMarkerActivity</string>
     <string name="title_field_hint">Title</string>
+    <string name="title_activity_audio_record">AudioRecordActivity</string>
 
 </resources>
