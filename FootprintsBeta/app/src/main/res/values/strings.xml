@@ -1,0 +1,21 @@
+<resources>
+    <string name="app_name">Footprints</string>
+    <string name="app_tagline">Explore your city one step at a time</string>
+    <string name="title_activity_maps">Map</string>
+    <string name="title_activity_camera">Record a Sight</string>
+    <string name="title_activity_add_marker">Add a Marker</string>
+    <string name="title_activity_view_marker">Whats Cool?</string>
+
+    <!-- Google Maps API Key -->
+    <string name="google_maps_key" templateMergeStrategy="preserve">AIzaSyBjGEEYrwHjeX4DW2xYn715FJSNbseecmQ</string>
+
+    <!-- Generic Buttons Strings -->
+    <string name="save_button">Save</string>
+    <string name="cancel_button">Cancel</string>
+
+    <!-- Launcher Activity Strings-->
+    <string name="enable_button">Enable GPS</string>
+    <string name="dummy_button">Dummy Button</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
+
+</resources>
