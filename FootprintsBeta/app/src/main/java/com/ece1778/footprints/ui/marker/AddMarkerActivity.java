@@ -22,6 +22,8 @@ import com.ece1778.footprints.database.MarkerTableEntry;
 import com.ece1778.footprints.ui.MapsActivity;
 import com.ece1778.footprints.util.fullscreenUtil.SystemUiHider;
 
+import java.io.File;
+
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
  * status bar and navigation/system bar) with user interaction.
@@ -186,9 +188,16 @@ public class AddMarkerActivity extends Activity {
         startActivity(intent);
     }
 
-    public void cancelSaveMarker(View view){
-        Intent intent = new Intent(this, MapsActivity.class);
-        startActivity(intent);
+    public void cancelMarker(View view){
+        // Delete any of the files that were created in the process.
+        if (mPictureUri != null && !mPictureUri.isEmpty()) {
+            new File(Uri.parse(mPictureUri).getPath()).delete();
+        }
+        if (mAudioUri != null &&!mAudioUri.isEmpty()) {
+            new File(Uri.parse(mAudioUri).getPath()).delete();
+        }
+        // Finish with adding
+        finish();
     }
 
     @Override

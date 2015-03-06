@@ -203,5 +203,8 @@ public class CameraActivity extends Activity {
         Intent i = new Intent(this, AddMarkerActivity.class);
         i.putExtra(AddMarkerActivity.PIC_URI_KEY, uri.toString());
         startActivity(i);
+        // When the result of the activity pops back, we want to avoid the camera screen.  So we
+        // finish here
+        finish();
     }
 }
