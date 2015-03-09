@@ -22,7 +22,7 @@
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
             android:layout_marginBottom="10dip"
-            android:layout_marginTop="50dip"
+            android:layout_marginTop="30dip"
             android:src="@drawable/ic_launcher" />
 
         <TextView
@@ -33,7 +33,7 @@
             android:layout_centerHorizontal="true"
             android:text="@string/app_name"
             android:textColor="@color/main_color"
-            android:textSize="40sp"
+            android:textSize="30sp"
             android:textStyle="bold"/>
         <TextView
             android:id="@+id/launcher_tagline"
@@ -43,8 +43,8 @@
             android:layout_centerHorizontal="true"
             android:layout_marginBottom="30dip"
             android:text="@string/app_tagline"
-            android:textColor="@color/highlight_color"
-            android:textSize="20sp" />
+            android:textColor="@color/body_text_color"
+            android:textSize="15sp" />
     </RelativeLayout>
 
 

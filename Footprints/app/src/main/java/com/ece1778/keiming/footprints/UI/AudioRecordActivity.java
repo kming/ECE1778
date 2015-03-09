@@ -2,6 +2,7 @@ package com.ece1778.keiming.footprints.UI;
 
         import android.app.Activity;
         import android.content.Intent;
+        import android.support.v7.app.ActionBarActivity;
         import android.widget.LinearLayout;
         import android.os.Bundle;
         import android.os.Environment;
@@ -19,7 +20,7 @@ package com.ece1778.keiming.footprints.UI;
         import java.io.IOException;
 
 
-public class AudioRecordActivity extends Activity
+public class AudioRecordActivity extends ActionBarActivity
 {
     private static final String LOG_TAG = "AudioRecordTest";
     private static String mFileName = null;

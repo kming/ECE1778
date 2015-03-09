@@ -130,7 +130,7 @@ public class MapsActivity extends FragmentActivity {
                         .position(new LatLng(latitude, longitude))
                         .title(timeString)
                         .icon(BitmapDescriptorFactory.fromResource(R.drawable.dot1))
-                        .anchor(0,mid)
+                        .anchor(mid,mid)
         );
         LocationDBManager.getManager(this).addValue(new LocTableEntry(
                 timeString,
@@ -155,7 +155,7 @@ public class MapsActivity extends FragmentActivity {
                         .position(new LatLng(latitude, longitude))
                         .title(titleString)
                         .icon(BitmapDescriptorFactory.fromResource(R.drawable.dot1))
-                        .anchor(0,mid)
+                        .anchor(mid,mid)
                 );
             }
         }

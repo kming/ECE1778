@@ -57,10 +57,12 @@ public class AddMarkerActivity extends ActionBarActivity {
         if (BuildConfig.DEBUG) { Log.d(TAG, "audio: " + mAudioUri); }
         if (BuildConfig.DEBUG) { Log.d(TAG, "location: " + mLocation); }
         if (BuildConfig.DEBUG) { Log.d(TAG, "timestamp: " + mTimestamp); }
+
+        ImageView imageView = (ImageView) findViewById(R.id.marker_pic);
         if (mPictureUri != null) {
-            ImageView imageView = (ImageView) findViewById(R.id.marker_pic);
             imageView.setImageURI(Uri.parse(mPictureUri));
         } else {
+            imageView.setImageResource(R.drawable.default_image);
         }
     }
 
