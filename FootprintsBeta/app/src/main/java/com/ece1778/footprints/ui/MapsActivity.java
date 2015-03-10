@@ -1,11 +1,17 @@
 package com.ece1778.footprints.ui;
 
+import android.annotation.TargetApi;
+import android.app.Activity;
 import android.content.Intent;
 import android.location.Location;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Button;
 
 import com.ece1778.footprints.BuildConfig;
 import com.ece1778.footprints.R;
@@ -15,6 +21,7 @@ import com.ece1778.footprints.ui.camera.CameraActivity;
 import com.ece1778.footprints.ui.marker.AddMarkerActivity;
 import com.ece1778.footprints.util.GeneralUtils;
 import com.ece1778.footprints.util.OrientationUtils;
+import com.ece1778.footprints.util.fullscreenUtil.SystemUiHider;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -31,10 +38,20 @@ public class MapsActivity extends FragmentActivity {
     private GoogleMap mMap; // Might be null if Google Play services APK is not available.
     private float mid=(float)0.5;
 
+    private static final boolean AUTO_HIDE = true;
+    private static final int AUTO_HIDE_DELAY_MILLIS = 5000;
+    private static final boolean TOGGLE_ON_CLICK = true;
+    private static final int HIDER_FLAGS = SystemUiHider.FLAG_HIDE_NAVIGATION;
+    private SystemUiHider mSystemUiHider;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+
+        Button btn=(Button)findViewById(R.id.settings_btn);
+        btn.setPressed(false);
 
         // Lock the orientation
         OrientationUtils.setOrientationPortrait(this);
@@ -49,9 +66,97 @@ public class MapsActivity extends FragmentActivity {
             public void onChanged(Location location) {
                 onLocationChanged(location);
             }
-       });
+        });
+
+        final View controlsView = findViewById(R.id.settingscreen_content_controls);
+        final View contentView = findViewById(R.id.mapscreen_content);
+
+        // Set up an instance of SystemUiHider to control the system UI for
+        // this activity.
+        mSystemUiHider = SystemUiHider.getInstance(this, contentView, HIDER_FLAGS);
+        mSystemUiHider.setup();
+        mSystemUiHider
+                .setOnVisibilityChangeListener(new SystemUiHider.OnVisibilityChangeListener() {
+                    // Cached values.
+                    int mControlsHeight;
+                    int mShortAnimTime;
+
+                    @Override
+                    @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
+                    public void onVisibilityChange(boolean visible) {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
+                            // If the ViewPropertyAnimator API is available
+                            // (Honeycomb MR2 and later), use it to animate the
+                            // in-layout UI controls at the bottom of the
+                            // screen.
+                            if (mControlsHeight == 0) {
+                                mControlsHeight = controlsView.getHeight();
+                            }
+                            if (mShortAnimTime == 0) {
+                                mShortAnimTime = getResources().getInteger(
+                                        android.R.integer.config_shortAnimTime);
+                            }
+                            controlsView.animate()
+                                    .translationY(visible ? 0 : mControlsHeight)
+                                    .setDuration(mShortAnimTime);
+                        } else {
+                            // If the ViewPropertyAnimator APIs aren't
+                            // available, simply show or hide the in-layout UI
+                            // controls.
+                            controlsView.setVisibility(visible ? View.VISIBLE : View.GONE);
+                        }
+
+                        if (visible && AUTO_HIDE) {
+                            // Schedule a hide().
+                            delayedHide(AUTO_HIDE_DELAY_MILLIS);
+                        }
+                    }
+                });
 
     }
+
+    @Override
+    protected void onPostCreate(Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
+
+        // Trigger the initial hide() shortly after the activity has been
+        // created, to briefly hint to the user that UI controls
+        // are available.
+        delayedHide(1);
+    }
+
+    /**
+     * Touch listener to use for in-layout UI controls to delay hiding the
+     * system UI. This is to prevent the jarring behavior of controls going away
+     * while interacting with activity UI.
+     */
+    View.OnTouchListener mDelayHideTouchListener = new View.OnTouchListener() {
+        @Override
+        public boolean onTouch(View view, MotionEvent motionEvent) {
+            if (AUTO_HIDE) {
+                delayedHide(AUTO_HIDE_DELAY_MILLIS);
+            }
+            return false;
+        }
+    };
+
+    Handler mHideHandler = new Handler();
+
+    /**
+     * Schedules a call to hide() in [delay] milliseconds, canceling any
+     * previously scheduled calls.
+     */
+     private void delayedHide(int delayMillis) {
+         Runnable mHideRunnable = new Runnable() {
+             @Override
+             public void run() {
+                 mSystemUiHider.hide();
+             }
+         };
+         mHideHandler.removeCallbacks(mHideRunnable);
+         mHideHandler.postDelayed(mHideRunnable, delayMillis);
+     }
+
     @Override
     protected void onPause() {
         super.onPause();
@@ -186,8 +291,12 @@ public class MapsActivity extends FragmentActivity {
     }
 
     public void goToSettings(View v){
-        // Intent intent = new Intent(this, SettingsActivity.class);
-        // startActivity(intent);
+        if (TOGGLE_ON_CLICK) {
+            mSystemUiHider.toggle();
+        } else {
+            mSystemUiHider.show();
+        }
+
     }
 
 
