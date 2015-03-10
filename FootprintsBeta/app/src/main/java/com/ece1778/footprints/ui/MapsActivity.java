@@ -3,6 +3,7 @@ package com.ece1778.footprints.ui;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Color;
 import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
@@ -12,6 +13,7 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
 
 import com.ece1778.footprints.BuildConfig;
 import com.ece1778.footprints.R;
@@ -29,8 +31,12 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polygon;
+import com.google.android.gms.maps.model.PolygonOptions;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class MapsActivity extends FragmentActivity {
 
@@ -43,7 +49,6 @@ public class MapsActivity extends FragmentActivity {
     private static final boolean TOGGLE_ON_CLICK = true;
     private static final int HIDER_FLAGS = SystemUiHider.FLAG_HIDE_NAVIGATION;
     private SystemUiHider mSystemUiHider;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -291,6 +296,9 @@ public class MapsActivity extends FragmentActivity {
     }
 
     public void goToSettings(View v){
+
+        Button btn=(Button)findViewById(R.id.settings_btn);
+
         if (TOGGLE_ON_CLICK) {
             mSystemUiHider.toggle();
         } else {
@@ -332,5 +340,26 @@ public class MapsActivity extends FragmentActivity {
     public boolean onMarkerClickDo (Marker marker) {
         // Marker was clicked.  Determine the marker info and pull the relevant information
         return true;
+    }
+
+    public void generateFog(View v){
+        CheckBox fogOnOff=(CheckBox)findViewById(R.id.fog_btn);
+        List points = Arrays.asList(new LatLng(2,3),
+                new LatLng(1,3),
+                new LatLng(1,2),
+                new LatLng(2,3));
+
+        if (fogOnOff.isChecked()){
+            Polygon polygon = mMap.addPolygon(new PolygonOptions()
+                    .add(new LatLng(-90, -180), new LatLng(90, -180), new LatLng(90, 180), new LatLng(-90, 180), new LatLng(-90, -180))
+                    .strokeColor(Color.RED)
+                    .fillColor(Color.BLUE)
+                    .addHole(points));
+
+        }else{
+
+
+        }
+
     }
 }

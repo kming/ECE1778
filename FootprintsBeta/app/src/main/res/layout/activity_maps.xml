@@ -86,17 +86,20 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|center_horizontal"
-            android:background="@color/black_overlay"
+            android:background="@color/darker_black_overlay"
             android:orientation="horizontal"
             tools:ignore="UselessParent">
 
-            <Button
-                android:id="@+id/placeholder_btn"
+            <CheckBox
+                android:id="@+id/fog_btn"
                 style="?metaButtonBarButtonStyle"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Placeholder"/>
+                android:layout_margin="20dip"
+                android:text="Fog"
+                android:textColor="@color/highlight_color"
+                android:onClick="generateFog"/>
 
         </LinearLayout>
     </FrameLayout>
