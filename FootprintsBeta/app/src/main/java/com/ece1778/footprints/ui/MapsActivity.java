@@ -19,6 +19,7 @@ import com.ece1778.footprints.BuildConfig;
 import com.ece1778.footprints.R;
 import com.ece1778.footprints.database.*;
 import com.ece1778.footprints.manager.LocationManager;
+import com.ece1778.footprints.manager.LocationServicesManager;
 import com.ece1778.footprints.ui.camera.CameraActivity;
 import com.ece1778.footprints.ui.marker.AddMarkerActivity;
 import com.ece1778.footprints.util.GeneralUtils;
@@ -67,13 +68,14 @@ public class MapsActivity extends FragmentActivity {
         setUpMapIfNeeded();
 
         // Set up location changed listener.
-        LocationManager.getManager(this);
-        LocationManager.setLocationChangedListener(new LocationManager.LocationChangedListener() {
+        LocationServicesManager.setLocationChangedListener(new LocationServicesManager.LocationChangedListener() {
             @Override
             public void onChanged(Location location) {
                 onLocationChanged(location);
             }
         });
+        Intent intent = new Intent(this, LocationServicesManager.class);
+        startService(intent);
 
         final View controlsView = findViewById(R.id.settingscreen_content_controls);
         final View contentView = findViewById(R.id.mapscreen_content);
@@ -167,25 +169,21 @@ public class MapsActivity extends FragmentActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        LocationManager.getManager(this).onPause();
         mMap.setOnMarkerClickListener(null);
     }
     @Override
     protected void onStart() {
         super.onStart();
-        LocationManager.getManager(this).onStart();
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        LocationManager.getManager(this).onStop();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        LocationManager.getManager(this).onResume();
         setUpMapIfNeeded();
 
         if (mMap != null) {

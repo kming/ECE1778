@@ -42,4 +42,19 @@ public class GeneralUtils {
         int mMin = calendar.get(Calendar.MINUTE);
         return mMonth + "/" + mDay + "/" + mYear + " " + mHour + ":" + mMin;
     }
+
+    public static Thread performOnBackgroundThread(final Runnable runnable) {
+        final Thread t = new Thread() {
+            @Override
+            public void run() {
+                try {
+                    runnable.run();
+                } finally {
+
+                }
+            }
+        };
+        t.start();
+        return t;
+    }
 }
