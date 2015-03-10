@@ -50,6 +50,8 @@ public class MapsActivity extends FragmentActivity {
     private static final int HIDER_FLAGS = SystemUiHider.FLAG_HIDE_NAVIGATION;
     private SystemUiHider mSystemUiHider;
 
+    private static boolean SettingBtnState = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -298,6 +300,13 @@ public class MapsActivity extends FragmentActivity {
     public void goToSettings(View v){
 
         Button btn=(Button)findViewById(R.id.settings_btn);
+
+
+        if (btn.isActivated()){
+            btn.setText("Hide Settings");
+        }else {
+            btn.setText("Settings");
+        }
 
         if (TOGGLE_ON_CLICK) {
             mSystemUiHider.toggle();
