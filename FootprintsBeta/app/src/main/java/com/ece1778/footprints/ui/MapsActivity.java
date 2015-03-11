@@ -12,8 +12,12 @@ import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.Toast;
+import android.widget.ToggleButton;
 
 import com.ece1778.footprints.BuildConfig;
 import com.ece1778.footprints.R;
@@ -35,6 +39,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polygon;
 import com.google.android.gms.maps.model.PolygonOptions;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -45,13 +50,9 @@ public class MapsActivity extends FragmentActivity {
     private GoogleMap mMap; // Might be null if Google Play services APK is not available.
     private float mid=(float)0.5;
 
-    private static final boolean AUTO_HIDE = true;
-    private static final int AUTO_HIDE_DELAY_MILLIS = 5000;
-    private static final boolean TOGGLE_ON_CLICK = true;
-    private static final int HIDER_FLAGS = SystemUiHider.FLAG_HIDE_NAVIGATION;
+    //SystemUIHider.FLAG_HIDE_NAVIGATION
+    private static final int HIDER_FLAGS = 0;
     private SystemUiHider mSystemUiHider;
-
-    private static boolean SettingBtnState = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -115,13 +116,8 @@ public class MapsActivity extends FragmentActivity {
                             controlsView.setVisibility(visible ? View.VISIBLE : View.GONE);
                         }
 
-                        if (visible && AUTO_HIDE) {
-                            // Schedule a hide().
-                            delayedHide(AUTO_HIDE_DELAY_MILLIS);
-                        }
                     }
                 });
-
     }
 
     @Override
@@ -131,40 +127,16 @@ public class MapsActivity extends FragmentActivity {
         // Trigger the initial hide() shortly after the activity has been
         // created, to briefly hint to the user that UI controls
         // are available.
-        delayedHide(1);
+        mSystemUiHider.hide();
     }
 
-    /**
-     * Touch listener to use for in-layout UI controls to delay hiding the
-     * system UI. This is to prevent the jarring behavior of controls going away
-     * while interacting with activity UI.
-     */
-    View.OnTouchListener mDelayHideTouchListener = new View.OnTouchListener() {
-        @Override
-        public boolean onTouch(View view, MotionEvent motionEvent) {
-            if (AUTO_HIDE) {
-                delayedHide(AUTO_HIDE_DELAY_MILLIS);
-            }
-            return false;
-        }
-    };
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        mSystemUiHider.hide();
+    }
 
-    Handler mHideHandler = new Handler();
 
-    /**
-     * Schedules a call to hide() in [delay] milliseconds, canceling any
-     * previously scheduled calls.
-     */
-     private void delayedHide(int delayMillis) {
-         Runnable mHideRunnable = new Runnable() {
-             @Override
-             public void run() {
-                 mSystemUiHider.hide();
-             }
-         };
-         mHideHandler.removeCallbacks(mHideRunnable);
-         mHideHandler.postDelayed(mHideRunnable, delayMillis);
-     }
 
     @Override
     protected void onPause() {
@@ -174,6 +146,7 @@ public class MapsActivity extends FragmentActivity {
     @Override
     protected void onStart() {
         super.onStart();
+        mSystemUiHider.hide();
     }
 
     @Override
@@ -184,8 +157,8 @@ public class MapsActivity extends FragmentActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        mSystemUiHider.hide();
         setUpMapIfNeeded();
-
         if (mMap != null) {
             mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
                 @Override
@@ -197,6 +170,7 @@ public class MapsActivity extends FragmentActivity {
         // populate the map.
         populateLocations();
         populateMarker();
+        mSystemUiHider.hide();
     }
 
 
@@ -297,19 +271,12 @@ public class MapsActivity extends FragmentActivity {
 
     public void goToSettings(View v){
 
-        Button btn=(Button)findViewById(R.id.settings_btn);
+        ToggleButton btn=(ToggleButton)findViewById(R.id.settings_btn);
 
-
-        if (btn.isActivated()){
-            btn.setText("Hide Settings");
-        }else {
-            btn.setText("Settings");
-        }
-
-        if (TOGGLE_ON_CLICK) {
-            mSystemUiHider.toggle();
-        } else {
+        if (btn.isChecked()){
             mSystemUiHider.show();
+        }else {
+            mSystemUiHider.hide();
         }
 
     }
@@ -320,9 +287,11 @@ public class MapsActivity extends FragmentActivity {
         startActivity(intent);
     }
 
+
     public void addMarker (View v) {
         Location location= LocationManager.getManager(this).getLocation();
         // Add Marker without picture.
+        if (BuildConfig.DEBUG) { Log.d(TAG, "AddMarker button Clicked" +location); }
         if (location != null) {
 
             String timeString = GeneralUtils.timeMilliToString(location.getTime());
@@ -351,22 +320,82 @@ public class MapsActivity extends FragmentActivity {
 
     public void generateFog(View v){
         CheckBox fogOnOff=(CheckBox)findViewById(R.id.fog_btn);
-        List points = Arrays.asList(new LatLng(2,3),
-                new LatLng(1,3),
-                new LatLng(1,2),
-                new LatLng(2,3));
+        float delta = 0.1f;
 
         if (fogOnOff.isChecked()){
             Polygon polygon = mMap.addPolygon(new PolygonOptions()
-                    .add(new LatLng(-90, -180), new LatLng(90, -180), new LatLng(90, 180), new LatLng(-90, 180), new LatLng(-90, -180))
-                    .strokeColor(Color.RED)
-                    .fillColor(Color.BLUE)
-                    .addHole(points));
+                .add(new LatLng(90, -180),
+                        new LatLng(-90 + delta, -180 + delta),
+                        new LatLng(-90 + delta, 0),
+                        new LatLng(-90 + delta, 180 - delta),
+                        new LatLng(0, 180 - delta),
+                        new LatLng(90 - delta, 180 - delta),
+                        new LatLng(90 - delta, 0),
+                        new LatLng(90 - delta, -180 + delta),
+                        new LatLng(0, -180 + delta))
+                .strokeWidth(0)
+                //.strokeColor(Color.RED)
+                .fillColor(Color.WHITE));
+
+            ArrayList<LocTableEntry> entries = LocationDBManager.getManager(this).getAllValues();
+            ArrayList<ArrayList<LatLng>> holes= new ArrayList<ArrayList<LatLng>>();
+            ArrayList<LatLng> holesMidPt = new ArrayList<LatLng>();
+            ArrayList<LatLng> hole;
+
+            LatLng tempMidPt;
+            double latitude;
+            double longitude;
+
+            for (LocTableEntry entry : entries) {
+                String location = entry.getLocation();
+                String[] locationParts = location.split(",");
+                latitude = Double.parseDouble(locationParts[0])*1000;
+                longitude = Double.parseDouble(locationParts[1])*1000;
+                latitude=Math.round(latitude);
+                longitude=Math.round(longitude);
+                latitude=latitude/1000;
+                longitude=longitude/1000;
+
+
+
+                for(int i=-3;i<4;i++){
+                    int a= (3-Math.abs(i))*2;
+
+                    for(int j=-a;j<a+1;j++){
+                        tempMidPt=new LatLng(latitude+i*0.001,longitude+j*0.001);
+                        if (holesMidPt.contains(tempMidPt)==false) {
+                            holesMidPt.add(tempMidPt);
+                        }
+                    }
+                }
+            }
+
+            for (LatLng entry2: holesMidPt) {
+
+                latitude = entry2.latitude;
+                longitude = entry2.longitude;
+
+                hole = new ArrayList<LatLng>();
+                hole.add(new LatLng(latitude+0.0005,longitude-0.0005));
+                hole.add(new LatLng(latitude+0.0005,longitude+0.00049));
+                hole.add(new LatLng(latitude-0.00049,longitude+0.00049));
+                hole.add(new LatLng(latitude-0.00049,longitude-0.0005));
+                hole.add(new LatLng(latitude+0.0005,longitude-0.0005));
+
+                holes.add(hole);
+            }
+
+            if(holes.size()>=1) {
+                polygon.setHoles(holes);
+            }
 
         }else{
-
+            mMap.clear();
+            populateLocations();
+            populateMarker();
 
         }
 
     }
+
 }

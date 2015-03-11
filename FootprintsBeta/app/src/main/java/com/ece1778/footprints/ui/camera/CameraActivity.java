@@ -48,7 +48,8 @@ public class CameraActivity extends Activity {
     /**
      * The flags to pass to {@link SystemUiHider#getInstance}.
      */
-    private static final int HIDER_FLAGS = SystemUiHider.FLAG_HIDE_NAVIGATION;
+    //private static final int HIDER_FLAGS = SystemUiHider.FLAG_HIDE_NAVIGATION;
+    private static final int HIDER_FLAGS = 0;
 
     /**
      * The instance of the {@link SystemUiHider} for this activity.

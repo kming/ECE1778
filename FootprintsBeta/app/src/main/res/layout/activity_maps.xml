@@ -16,14 +16,15 @@
         tools:context="com.ece1778.footprints.UI.MapsActivity"
         android:name="com.google.android.gms.maps.SupportMapFragment" />
 
-        <Button
+        <ToggleButton
             android:id="@+id/settings_btn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dip"
             android:layout_alignParentTop="true"
             android:layout_centerHorizontal="true"
-            android:text="Settings"
+            android:textOff="Settings"
+            android:textOn="HideSettings"
             android:onClick="goToSettings"/>
 
         <LinearLayout
@@ -86,7 +87,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|center_horizontal"
-            android:background="@color/darker_black_overlay"
+            android:background="@color/white_overlay"
             android:orientation="horizontal"
             tools:ignore="UselessParent">
 
@@ -98,7 +99,7 @@
                 android:layout_weight="1"
                 android:layout_margin="20dip"
                 android:text="Fog"
-                android:textColor="@color/highlight_color"
+                android:textColor="@color/body_text_color"
                 android:onClick="generateFog"/>
 
         </LinearLayout>

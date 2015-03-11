@@ -105,7 +105,7 @@ public class LocationServicesManager extends Service {
     }
 
     // Called on Resume - Needs to re-enable system.
-    public void onResume() {
+    public static void onResume() {
         if (locationManager.mRequestingLocationUpdates == false) {
             locationManager.startLocationUpdates();
             locationManager.mRequestingLocationUpdates = true;
@@ -113,7 +113,7 @@ public class LocationServicesManager extends Service {
     }
 
     // Called on Pause - Needs to disable system. prevent hogging location services
-    public void onPause() {
+    public static void onPause() {
         if (locationManager.mRequestingLocationUpdates == true) {
             locationManager.stopLocationUpdates();
             locationManager.mRequestingLocationUpdates = false;
@@ -265,12 +265,12 @@ public class LocationServicesManager extends Service {
     protected void onConnected() {
         Log.d(TAG, "onConnected Connection Callback");
         startLocationUpdates();
-        LocationManager.onResume();
+        LocationServicesManager.onResume();
     }
 
     protected void onSuspended() {
         Log.d(TAG, "onConnectedSuspended Connection Callback");
-        LocationManager.onPause();
+        LocationServicesManager.onPause();
     }
 
     protected void onConnectionFail() {
