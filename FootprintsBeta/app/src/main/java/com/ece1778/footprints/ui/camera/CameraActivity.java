@@ -62,6 +62,8 @@ public class CameraActivity extends Activity {
     private static final String TAG = CameraActivity.class.getName();
     private CameraManager cameraManager;
     private Context mContext = this;
+    public static final String LOCATION_KEY = "location";
+    public static final String TIMESTAMP_KEY = "timestamp";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -200,9 +202,12 @@ public class CameraActivity extends Activity {
 
 
     private void onPictureCallback(Uri uri) {
+        Intent iOrigin = getIntent();
         // After picture is taken, uri needs to be send to the POI Screen.
         Intent i = new Intent(this, AddMarkerActivity.class);
         i.putExtra(AddMarkerActivity.PIC_URI_KEY, uri.toString());
+        i.putExtra(AddMarkerActivity.LOCATION_KEY, iOrigin.getStringExtra(LOCATION_KEY));
+        i.putExtra(AddMarkerActivity.TIMESTAMP_KEY, iOrigin.getStringExtra(TIMESTAMP_KEY));
         startActivity(i);
         // When the result of the activity pops back, we want to avoid the camera screen.  So we
         // finish here

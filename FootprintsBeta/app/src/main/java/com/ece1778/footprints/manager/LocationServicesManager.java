@@ -151,13 +151,13 @@ public class LocationServicesManager extends Service {
      * Get/Set Functions for internal information
      */
     // get current location
-    public Location getLocation() {
-        return mCurrentLocation;
+    public static Location getLocation() {
+        return locationManager.mCurrentLocation;
     }
 
     // get previous location
-    public Location getmPreviousLocation() {
-        return mPreviousLocation;
+    public static Location getmPreviousLocation() {
+        return locationManager.mPreviousLocation;
     }
 
     // get string representing location

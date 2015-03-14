@@ -2,11 +2,16 @@ package com.ece1778.footprints.ui.marker;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
+import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
@@ -23,6 +28,10 @@ import com.ece1778.footprints.ui.MapsActivity;
 import com.ece1778.footprints.util.fullscreenUtil.SystemUiHider;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+
+import static com.ece1778.footprints.util.FileUtils.decodeSampledBitmapFromFile;
 
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
@@ -144,7 +153,28 @@ public class AddMarkerActivity extends Activity {
         // while interacting with the UI.
         //findViewById(R.id.).setOnTouchListener(mDelayHideTouchListener);
 
+        // Populate Elements after the view is created, so the size is known.
         populateElements();
+    }
+
+    @Override
+    public View onCreateView (View parent, String name, Context context, AttributeSet attrs) {
+        View root = super.onCreateView(parent, name, context, attrs);
+
+
+        return root;
+    }
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        // to prevent out of memory error, on destroy of activity, destroy the bitmap used.
+        ImageView imageView = (ImageView) findViewById(R.id.marker_pic);
+        BitmapDrawable bd = (BitmapDrawable) imageView.getDrawable();
+        if (bd != null) {
+            bd.getBitmap().recycle();
+            imageView.setImageBitmap(null);
+        }
+
     }
 
     private void populateElements () {
@@ -161,7 +191,24 @@ public class AddMarkerActivity extends Activity {
 
         ImageView imageView = (ImageView) findViewById(R.id.marker_pic);
         if (mPictureUri != null) {
-            imageView.setImageURI(Uri.parse(mPictureUri));
+            try {
+                ExifInterface exifInterface = new ExifInterface(Uri.parse(mPictureUri).getPath());
+                if (exifInterface.hasThumbnail()) {
+                    if (BuildConfig.DEBUG) {Log.d (TAG, "Loading Thumbnail"); }
+                    byte[] data = exifInterface.getThumbnail();
+                    imageView.setImageBitmap(BitmapFactory.decodeByteArray(data, 0, data.length));
+                } else {
+                    imageView.setImageBitmap(
+                            decodeSampledBitmapFromFile(new File(Uri.parse(mPictureUri).getPath()),
+                                    300,
+                                    300)
+                    );
+                }
+            } catch (FileNotFoundException e) {
+                if (BuildConfig.DEBUG) {Log.e (TAG, e.getMessage());}
+            } catch (IOException e) {
+                if (BuildConfig.DEBUG) {Log.e (TAG, e.getMessage());}
+            }
         } else {
             // In the case where no photo, set default picture.
             // TODO: Look into creating a snapshot of the google maps and using that instead.

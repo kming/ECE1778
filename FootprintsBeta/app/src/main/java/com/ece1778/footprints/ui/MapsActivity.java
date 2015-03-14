@@ -283,13 +283,27 @@ public class MapsActivity extends FragmentActivity {
 
 
     public void loadCamera (View view) {
-        Intent intent = new Intent(this, CameraActivity.class);
-        startActivity(intent);
+        Location location= LocationServicesManager.getLocation();
+        // Add Marker without picture.
+        if (BuildConfig.DEBUG) { Log.d(TAG, "LoadCamera button Clicked" +location); }
+        if (location != null) {
+
+            String timeString = GeneralUtils.timeMilliToString(location.getTime());
+
+            if (BuildConfig.DEBUG) { Log.d(TAG, "Add Marker " +
+                    GeneralUtils.locationToString(location)); }
+
+            Intent i = new Intent(this, CameraActivity.class);
+            i.putExtra(CameraActivity.LOCATION_KEY, GeneralUtils.locationToString(location));
+            i.putExtra(CameraActivity.TIMESTAMP_KEY, timeString);
+
+            startActivity(i);
+        }
     }
 
 
     public void addMarker (View v) {
-        Location location= LocationManager.getManager(this).getLocation();
+        Location location= LocationServicesManager.getLocation();
         // Add Marker without picture.
         if (BuildConfig.DEBUG) { Log.d(TAG, "AddMarker button Clicked" +location); }
         if (location != null) {

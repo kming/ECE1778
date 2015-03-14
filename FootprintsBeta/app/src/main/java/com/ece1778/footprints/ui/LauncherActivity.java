@@ -56,7 +56,7 @@ public class LauncherActivity extends Activity {
      * Class Strings
      */
     private static final String ENABLE_GPS_STRING = "Enable GPS";
-    private static final String LOGON_STRING = "Logon";
+    private static final String LOGON_STRING = "Start Exploring";
     private static final String TAG = LauncherActivity.class.getName();
 
 
@@ -207,7 +207,7 @@ public class LauncherActivity extends Activity {
             enableButton.setText(LOGON_STRING);
         } else {
             enableButton.setText(ENABLE_GPS_STRING);
-            Toast.makeText(this, "Please Enable GPS Settings to Logon", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Please Enable GPS Settings First", Toast.LENGTH_LONG).show();
         }
     }
 }
