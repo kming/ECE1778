@@ -24,6 +24,7 @@ import com.ece1778.footprints.R;
 import com.ece1778.footprints.database.*;
 import com.ece1778.footprints.manager.LocationManager;
 import com.ece1778.footprints.manager.LocationServicesManager;
+import com.ece1778.footprints.manager.MotionDetectionService;
 import com.ece1778.footprints.ui.camera.CameraActivity;
 import com.ece1778.footprints.ui.marker.AddMarkerActivity;
 import com.ece1778.footprints.util.GeneralUtils;
@@ -76,6 +77,10 @@ public class MapsActivity extends FragmentActivity {
             }
         });
         Intent intent = new Intent(this, LocationServicesManager.class);
+        startService(intent);
+
+        // Start Motion Detection Service
+        intent = new Intent(this, MotionDetectionService.class);
         startService(intent);
 
         final View controlsView = findViewById(R.id.settingscreen_content_controls);

@@ -24,6 +24,7 @@
             android:value="@string/google_maps_key" />
 
         <service android:name=".manager.LocationServicesManager"/>
+        <service android:name=".manager.MotionDetectionService"/>
         <activity
             android:name=".ui.LauncherActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
