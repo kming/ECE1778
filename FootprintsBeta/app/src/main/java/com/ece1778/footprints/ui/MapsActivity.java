@@ -18,6 +18,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
@@ -65,6 +66,9 @@ public class MapsActivity extends FragmentActivity {
 
         Button btn=(Button)findViewById(R.id.settings_btn);
         btn.setPressed(false);
+
+        RelativeLayout recomView=(RelativeLayout) findViewById(R.id.recommendation_view);
+        recomView.setVisibility(View.GONE);
 
         // Lock the orientation
         OrientationUtils.setOrientationPortrait(this);
@@ -127,7 +131,11 @@ public class MapsActivity extends FragmentActivity {
                     }
                 });
 
-
+        RecyclerView recList = (RecyclerView) findViewById(R.id.cardList);
+        recList.setHasFixedSize(true);
+        LinearLayoutManager llm = new LinearLayoutManager(this);
+        llm.setOrientation(LinearLayoutManager.HORIZONTAL);
+        recList.setLayoutManager(llm);
 
     }
 
@@ -338,14 +346,54 @@ public class MapsActivity extends FragmentActivity {
         //startActivity(i);
     }
 
-    public void goToRecommendations (View v) {
+    private List<MarkerTableEntry> createList(int size) {
 
-        if (MarkerDBManager.getManager(this).getValuesCount()>0) {
-            Intent i = new Intent(this, MarkerViewActivity.class);
-            startActivity(i);
+        List<MarkerTableEntry> savedEntries = MarkerDBManager.getManager(this).getAllValues();
+        List<MarkerTableEntry> result = new ArrayList<MarkerTableEntry>();
 
+        for (MarkerTableEntry entry:savedEntries) {
+            MarkerTableEntry marker = new MarkerTableEntry();
+            marker.setTitle(entry.getTitle());
+            marker.setNote(entry.getNote());
+            marker.setPicture(entry.getPicture());
+            marker.setLocation(entry.getLocation());
+
+            result.add(marker);
+
+        }
+
+        return result;
+    }
+
+    public void showRecommendations (View v) {
+
+        CheckBox recomOnOff=(CheckBox)findViewById(R.id.view_recom_btn);
+        RelativeLayout recomView=(RelativeLayout) findViewById(R.id.recommendation_view);
+
+        if (recomOnOff.isChecked()) {
+
+            if (MarkerDBManager.getManager(this).getValuesCount() > 0) {
+                //show recommendation box
+
+                RecyclerView recList = (RecyclerView) findViewById(R.id.cardList);
+
+                MarkerScrollAdapter msa = new MarkerScrollAdapter(createList(5));
+                msa.setOnClickedListener(new MarkerScrollAdapter.onClickedListener() {
+                    @Override
+                    public void onChanged(LatLng coordinates) {
+                        onMarkerAdapterClicked(coordinates);
+                    }
+                });
+                recList.setAdapter(msa);
+
+                recomView.setVisibility(View.VISIBLE);
+
+            } else {
+                Toast.makeText(this, "No markers yet", Toast.LENGTH_SHORT).show();
+                recomOnOff.setChecked(false);
+            }
         }else{
-            Toast.makeText(this, "No markers yet", Toast.LENGTH_SHORT).show();
+            recomView.setVisibility(View.GONE);
         }
     }
 
@@ -433,5 +481,8 @@ public class MapsActivity extends FragmentActivity {
 
     }
 
+    private void onMarkerAdapterClicked (LatLng coordinates) {
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(coordinates, 13));
+    }
 
 }

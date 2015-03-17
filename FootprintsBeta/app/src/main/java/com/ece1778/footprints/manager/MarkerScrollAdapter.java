@@ -17,6 +17,10 @@ import android.widget.TextView;
 import com.ece1778.footprints.BuildConfig;
 import com.ece1778.footprints.R;
 import com.ece1778.footprints.database.MarkerTableEntry;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -29,10 +33,11 @@ public class MarkerScrollAdapter extends RecyclerView.Adapter<MarkerScrollAdapte
 
     private static final String TAG = MarkerScrollAdapter.class.getName();
     private List<MarkerTableEntry> markerList;
+    private onClickedListener mListener = null;
+
     public MarkerScrollAdapter(List<MarkerTableEntry> markerList) {
         this.markerList = markerList;
     }
-
 
     @Override
     public int getItemCount() {
@@ -45,13 +50,20 @@ public class MarkerScrollAdapter extends RecyclerView.Adapter<MarkerScrollAdapte
         markerScrollViewHolder.vNote.setText(marker.getNote());
         markerScrollViewHolder.vTitle.setText(marker.getTitle());
 
+        String loc=marker.getLocation();
+        String[] latlong=  loc.split(",");
+        double latitude = Double.parseDouble(latlong[0])-.012;
+        double longitude = Double.parseDouble(latlong[1])+.001;
+        markerScrollViewHolder.vLocation=new LatLng(latitude,longitude);
+
         String mPictureUri = marker.getPicture();
         if (mPictureUri != null) {
             try {
                 ExifInterface exifInterface = new ExifInterface(Uri.parse(mPictureUri).getPath());
                 if (exifInterface.hasThumbnail()) {
                     if (BuildConfig.DEBUG) {
-                        Log.d(TAG, "Loading Thumbnail"); }
+                        Log.d(TAG, "Loading Thumbnail");
+                    }
                     byte[] data = exifInterface.getThumbnail();
                     markerScrollViewHolder.vImage.setImageBitmap(BitmapFactory.decodeByteArray(data, 0, data.length));
                 } else {
@@ -62,9 +74,13 @@ public class MarkerScrollAdapter extends RecyclerView.Adapter<MarkerScrollAdapte
                     );
                 }
             } catch (FileNotFoundException e) {
-                if (BuildConfig.DEBUG) {Log.e (TAG, e.getMessage());}
+                if (BuildConfig.DEBUG) {
+                    Log.e(TAG, e.getMessage());
+                }
             } catch (IOException e) {
-                if (BuildConfig.DEBUG) {Log.e (TAG, e.getMessage());}
+                if (BuildConfig.DEBUG) {
+                    Log.e(TAG, e.getMessage());
+                }
             }
         } else {
             // In the case where no photo, set default picture.
@@ -82,17 +98,39 @@ public class MarkerScrollAdapter extends RecyclerView.Adapter<MarkerScrollAdapte
         return new MarkerScrollViewHolder(itemView);
     }
 
-    public static class MarkerScrollViewHolder extends RecyclerView.ViewHolder {
+    public class MarkerScrollViewHolder extends RecyclerView.ViewHolder {
 
         protected TextView vNote;
         protected TextView vTitle;
+        protected LatLng vLocation;
         protected ImageView vImage;
 
         public MarkerScrollViewHolder(View v) {
             super(v);
-            vNote = (TextView)  v.findViewById(R.id.cardStory);
+            vNote = (TextView) v.findViewById(R.id.cardStory);
             vTitle = (TextView) v.findViewById(R.id.cardTitle);
             vImage = (ImageView) v.findViewById(R.id.cardImage);
+
+
+            v.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (mListener != null) {
+                        mListener.onChanged(vLocation);
+                    } else {
+                        if (BuildConfig.DEBUG) { Log.d(TAG, "Listener Not Set"); }
+                    }
+                }
+            });
         }
     }
+
+    public void setOnClickedListener (onClickedListener listener) {
+        mListener = listener;
+    }
+
+    public interface onClickedListener {
+        void onChanged(LatLng coordinates);
+    }
+
 }

@@ -27,18 +27,8 @@
         android:textOn="HideSettings"
         android:onClick="goToSettings"/>
 
-        <Button
-            android:id="@+id/view_recom_btn"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dip"
-            android:layout_below="@id/settings_btn"
-            android:layout_centerHorizontal="true"
-            android:text="View Recommendations"
-            android:onClick="goToRecommendations"/>
-
-
         <LinearLayout
+            android:id="@+id/button_field"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
@@ -83,6 +73,20 @@
                 android:onClick="loadAudioRecorder"/>
 
         </LinearLayout>
+
+        <!--recommendation recycle view-->
+        <RelativeLayout
+            android:id="@+id/recommendation_view"
+            android:layout_width="match_parent"
+            android:layout_height="200dip"
+            android:layout_above="@id/button_field">
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/cardList"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"/>
+
+        </RelativeLayout>
     </RelativeLayout>
 
     <!-- This FrameLayout insets its children based on system windows using
@@ -112,6 +116,17 @@
                 android:text="Fog"
                 android:textColor="@color/body_text_color"
                 android:onClick="generateFog"/>
+
+            <CheckBox
+                android:id="@+id/view_recom_btn"
+                style="?metaButtonBarButtonStyle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:layout_margin="20dip"
+                android:text="Recommend Markers"
+                android:textColor="@color/body_text_color"
+                android:onClick="showRecommendations"/>
 
         </LinearLayout>
     </FrameLayout>
