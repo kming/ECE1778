@@ -9,6 +9,8 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.FragmentActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
@@ -24,6 +26,7 @@ import com.ece1778.footprints.R;
 import com.ece1778.footprints.database.*;
 import com.ece1778.footprints.manager.LocationManager;
 import com.ece1778.footprints.manager.LocationServicesManager;
+import com.ece1778.footprints.manager.MarkerScrollAdapter;
 import com.ece1778.footprints.manager.MotionDetectionService;
 import com.ece1778.footprints.ui.camera.CameraActivity;
 import com.ece1778.footprints.ui.marker.AddMarkerActivity;
@@ -123,6 +126,9 @@ public class MapsActivity extends FragmentActivity {
 
                     }
                 });
+
+
+
     }
 
     @Override
@@ -332,6 +338,17 @@ public class MapsActivity extends FragmentActivity {
         //startActivity(i);
     }
 
+    public void goToRecommendations (View v) {
+
+        if (MarkerDBManager.getManager(this).getValuesCount()>0) {
+            Intent i = new Intent(this, MarkerViewActivity.class);
+            startActivity(i);
+
+        }else{
+            Toast.makeText(this, "No markers yet", Toast.LENGTH_SHORT).show();
+        }
+    }
+
     public boolean onMarkerClickDo (Marker marker) {
         // Marker was clicked.  Determine the marker info and pull the relevant information
         return true;
@@ -412,9 +429,9 @@ public class MapsActivity extends FragmentActivity {
             mMap.clear();
             populateLocations();
             populateMarker();
-
         }
 
     }
+
 
 }

@@ -23,8 +23,9 @@
             android:name="com.google.android.maps.v2.API_KEY"
             android:value="@string/google_maps_key" />
 
-        <service android:name=".manager.LocationServicesManager"/>
-        <service android:name=".manager.MotionDetectionService"/>
+        <service android:name=".manager.LocationServicesManager" />
+        <service android:name=".manager.MotionDetectionService" />
+
         <activity
             android:name=".ui.LauncherActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
@@ -69,6 +70,14 @@
             android:label="@string/title_activity_view_marker"
             android:parentActivityName=".ui.MapsActivity"
             android:theme="@style/FullscreenTheme" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.ece1778.footprints.ui.MapsActivity" />
+        </activity>
+        <activity
+            android:name=".ui.MarkerViewActivity"
+            android:label="@string/title_activity_marker_view"
+            android:parentActivityName=".ui.MapsActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.ece1778.footprints.ui.MapsActivity" />

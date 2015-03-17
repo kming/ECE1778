@@ -17,15 +17,26 @@
         android:name="com.google.android.gms.maps.SupportMapFragment" />
 
         <ToggleButton
-            android:id="@+id/settings_btn"
+        android:id="@+id/settings_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dip"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:textOff="Settings"
+        android:textOn="HideSettings"
+        android:onClick="goToSettings"/>
+
+        <Button
+            android:id="@+id/view_recom_btn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dip"
-            android:layout_alignParentTop="true"
+            android:layout_below="@id/settings_btn"
             android:layout_centerHorizontal="true"
-            android:textOff="Settings"
-            android:textOn="HideSettings"
-            android:onClick="goToSettings"/>
+            android:text="View Recommendations"
+            android:onClick="goToRecommendations"/>
+
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -105,21 +116,6 @@
         </LinearLayout>
     </FrameLayout>
 
-    <RelativeLayout
-        android:id="@+id/recommendation_view"
-        android:layout_width="match_parent"
-        android:layout_height="300dip">
 
-       <Button
-           android:id="@+id/close_recommendations_btn"
-           android:layout_width="wrap_content"
-           android:layout_height="wrap_content"
-           android:layout_alignParentTop="true"
-           android:layout_alignParentRight="true"
-           android:text="Close"
-           />
-
-
-        </RelativeLayout>
 
 </FrameLayout>

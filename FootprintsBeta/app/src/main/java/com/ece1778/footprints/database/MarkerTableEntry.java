@@ -11,6 +11,7 @@ public class MarkerTableEntry {
     private String mLocation;
     private String mNote;
     private String mTimeStamp;
+    private String mTitle;
 
     // empty constructor
     public MarkerTableEntry() {
@@ -19,22 +20,24 @@ public class MarkerTableEntry {
 
     // partial constructor for adding to database w/o ID
     // Assumes it is stored as a string for the uri
-    public MarkerTableEntry(String picture, String audio, String time, String location, String note) {
+    public MarkerTableEntry(String picture, String audio, String time, String location, String note, String title) {
         this.mPicture = picture;
         this.mAudio = audio;
         this.mLocation = location;
         this.mNote = note;
         this.mTimeStamp = time;
+        this.mTitle = title;
     }
 
     // full constructor for reading from database with ID
-    public MarkerTableEntry(long id, String picture, String audio, String time, String location, String note) {
+    public MarkerTableEntry(long id, String picture, String audio, String time, String location, String note, String title) {
         this.id = id;
         this.mPicture = picture;
         this.mAudio = audio;
         this.mLocation = location;
         this.mNote = note;
         this.mTimeStamp = time;
+        this.mTitle = title;
     }
 
     public long getID() {
@@ -84,5 +87,13 @@ public class MarkerTableEntry {
 
     public void setTime(String value) {
         this.mTimeStamp = value;
+    }
+
+    public String getTitle() {
+        return this.mTitle;
+    }
+
+    public void setTitle(String value) {
+        this.mTitle = value;
     }
 }

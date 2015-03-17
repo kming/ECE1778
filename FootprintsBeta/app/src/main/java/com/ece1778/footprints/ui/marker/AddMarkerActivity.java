@@ -83,6 +83,7 @@ public class AddMarkerActivity extends Activity {
     private String mNote= null;
     private String mLocation = null;
     private String mTimestamp = null;
+    private String mTitle = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -221,12 +222,16 @@ public class AddMarkerActivity extends Activity {
         EditText note= (EditText)findViewById(R.id.message_field);
         mNote=note.getText().toString();
 
+        EditText title= (EditText)findViewById(R.id.location_field);
+        mTitle=title.getText().toString();
+
         MarkerDBManager.getManager(this).addValue(new MarkerTableEntry(
                 mPictureUri,
                 mAudioUri,
                 mTimestamp,
                 mLocation,
-                mNote
+                mNote,
+                mTitle
         ));
     }
 

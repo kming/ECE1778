@@ -14,7 +14,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:gravity="center"
-        android:keepScreenOn="true">
+        android:keepScreenOn="true"
+        android:background="@drawable/launcher_bkg">
 
         <ImageView
             android:id="@+id/launcher_logo"

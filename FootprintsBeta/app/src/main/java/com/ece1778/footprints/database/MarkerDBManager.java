@@ -27,6 +27,7 @@ public class MarkerDBManager extends SQLiteOpenHelper {
     public static final String COLUMN_PICTURE = "picture";
     public static final String COLUMN_AUDIO = "audio";
     public static final String COLUMN_NOTE = "note";
+    public static final String COLUMN_TITLE = "title";
 
     // Database creation sql statement
     private static final String DATABASE_CREATE = "CREATE TABLE "
@@ -37,7 +38,8 @@ public class MarkerDBManager extends SQLiteOpenHelper {
             + COLUMN_LOCATION + " text not null,"
             + COLUMN_PICTURE + " text,"
             + COLUMN_AUDIO + " text,"
-            + COLUMN_NOTE + " text"
+            + COLUMN_NOTE + " text,"
+            + COLUMN_TITLE + " text"
             + ");";
 
     // Define Database Parameters
@@ -160,6 +162,7 @@ public class MarkerDBManager extends SQLiteOpenHelper {
         values.put(COLUMN_TIME, entry.getTime());
         values.put(COLUMN_LOCATION, entry.getLocation());
         values.put(COLUMN_NOTE, entry.getNote());
+        values.put(COLUMN_TITLE, entry.getTitle());
 
         // Inserting into database
         db.insert(TABLE_ENTRIES, null, values);
@@ -182,7 +185,8 @@ public class MarkerDBManager extends SQLiteOpenHelper {
                 COLUMN_AUDIO,
                 COLUMN_TIME,
                 COLUMN_LOCATION,
-                COLUMN_NOTE
+                COLUMN_NOTE,
+                COLUMN_TITLE
         }
                 , COLUMN_ID + "=?", new String[]{
                 String.valueOf(id)
@@ -197,7 +201,8 @@ public class MarkerDBManager extends SQLiteOpenHelper {
                     cursor.getString(2),                    // Audio
                     cursor.getString(3),                    // time
                     cursor.getString(4),                    // location
-                    cursor.getString(5)                     // Note
+                    cursor.getString(5),                     // Note
+                    cursor.getString(6)                     // Title
             );
         }
         db.close();
@@ -218,7 +223,8 @@ public class MarkerDBManager extends SQLiteOpenHelper {
                 COLUMN_AUDIO,
                 COLUMN_TIME,
                 COLUMN_LOCATION,
-                COLUMN_NOTE
+                COLUMN_NOTE,
+                COLUMN_TITLE
         }
                 , COLUMN_TIME + "=?", new String[]{
                 name
@@ -249,7 +255,8 @@ public class MarkerDBManager extends SQLiteOpenHelper {
                 COLUMN_AUDIO,
                 COLUMN_TIME,
                 COLUMN_LOCATION,
-                COLUMN_NOTE
+                COLUMN_NOTE,
+                COLUMN_TITLE
         }
                 , null, null, null, null, null, null);
 
@@ -262,7 +269,8 @@ public class MarkerDBManager extends SQLiteOpenHelper {
                         cursor.getString(2),                    // Audio
                         cursor.getString(3),                    // time
                         cursor.getString(4),                    // location
-                        cursor.getString(5)                     // Note
+                        cursor.getString(5),                    // Note
+                        cursor.getString(6)                     // title
                 );
                 // Adding contact to list
                 entryList.add(tableEntry);
@@ -303,6 +311,7 @@ public class MarkerDBManager extends SQLiteOpenHelper {
         values.put(COLUMN_TIME, entry.getTime());
         values.put(COLUMN_LOCATION, entry.getLocation());
         values.put(COLUMN_NOTE, entry.getNote());
+        values.put(COLUMN_TITLE, entry.getTitle());
 
         // updating row
         int result = db.update(TABLE_ENTRIES, values, COLUMN_ID + " = ?",
