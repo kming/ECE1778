@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Color;
 import android.location.Location;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -26,10 +27,9 @@ import com.ece1778.footprints.BuildConfig;
 import com.ece1778.footprints.R;
 import com.ece1778.footprints.database.*;
 import com.ece1778.footprints.manager.InfoWindowAdapter;
-import com.ece1778.footprints.manager.LocationManager;
 import com.ece1778.footprints.manager.LocationServicesManager;
 import com.ece1778.footprints.manager.MarkerScrollAdapter;
-import com.ece1778.footprints.manager.MotionDetectionService;
+import com.ece1778.footprints.manager.MotionDetectionLocationService;
 import com.ece1778.footprints.ui.camera.CameraActivity;
 import com.ece1778.footprints.ui.marker.AddMarkerActivity;
 import com.ece1778.footprints.util.GeneralUtils;
@@ -78,18 +78,16 @@ public class MapsActivity extends FragmentActivity {
         setUpMapIfNeeded();
 
         // Set up location changed listener.
-        LocationServicesManager.setLocationChangedListener(new LocationServicesManager.LocationChangedListener() {
-            @Override
-            public void onChanged(Location location) {
-                onLocationChanged(location);
-            }
-        });
-        Intent intent = new Intent(this, LocationServicesManager.class);
+        MotionDetectionLocationService.setLocationChangedListener(
+                new MotionDetectionLocationService.LocationChangedListener() {
+                    @Override
+                    public void onChanged(Location location) {
+                        onLocationChanged(location);
+                    }
+                });
+        Intent intent = new Intent(this, MotionDetectionLocationService.class);
         startService(intent);
 
-        // Start Motion Detection Service
-        intent = new Intent(this, MotionDetectionService.class);
-        startService(intent);
 
         final View controlsView = findViewById(R.id.settingscreen_content_controls);
         final View contentView = findViewById(R.id.mapscreen_content);
@@ -156,8 +154,6 @@ public class MapsActivity extends FragmentActivity {
         mSystemUiHider.hide();
     }
 
-
-
     @Override
     protected void onPause() {
         super.onPause();
@@ -194,7 +190,6 @@ public class MapsActivity extends FragmentActivity {
     }
 
 
-
     private void setUpMapIfNeeded() {
         // Do a null check to confirm that we have not already instantiated the map.
         if (mMap == null) {
@@ -212,7 +207,7 @@ public class MapsActivity extends FragmentActivity {
     private void setUpMap() {
 
         if (BuildConfig.DEBUG) { Log.d(TAG, "Setup Map");}
-        Location location= LocationManager.getManager(this).getLocation();
+
         //TODO: MAKE SURE TO SAVE LAST KNOWN LOCATION in LOCATION MANAGER
         //LatLng curLoc = new LatLng(location.getLatitude(), location.getLongitude());
         LatLng curLoc = new LatLng(43.65,-79.4);
@@ -234,7 +229,7 @@ public class MapsActivity extends FragmentActivity {
                         .position(new LatLng(latitude, longitude))
                         .title(timeString)
                         .icon(BitmapDescriptorFactory.fromResource(R.drawable.dot1))
-                        .anchor(mid,mid)
+                        .anchor(mid, mid)
         );
         LocationDBManager.getManager(this).addValue(new LocTableEntry(
                 timeString,
@@ -243,69 +238,97 @@ public class MapsActivity extends FragmentActivity {
         ));
     }
 
-    private void populateLocations () {
+    private void populateLocations() {
         if (LocationDBManager.getManager(this).getValuesCount() > 0) {
             if (BuildConfig.DEBUG) { Log.d(TAG, "Populate Old Locations"); }
-            ArrayList<LocTableEntry> entries = LocationDBManager.getManager(this).getAllValues();
+            new AsyncTask<Void, Void, ArrayList<LocTableEntry>>() {
+                @Override
+                protected ArrayList<LocTableEntry> doInBackground(Void... params) {
+                    return LocationDBManager.getManager(getApplicationContext()).getAllValues();
+                }
 
-            for (LocTableEntry entry : entries) {
-                String location = entry.getLocation();
-                String[] locationParts = location.split(",");
-                double latitude = Double.parseDouble(locationParts[0]);
-                double longitude = Double.parseDouble(locationParts[1]);
-                String titleString = entry.getTimeStamp();
-                if (BuildConfig.DEBUG) { Log.d(TAG, locationParts[0]+ "  " +  locationParts[1] ); }
-                mMap.addMarker(new MarkerOptions()
-                                .position(new LatLng(latitude, longitude))
-                                        //.title(titleString)
-                                .icon(BitmapDescriptorFactory.fromResource(R.drawable.dot1))
-                                .anchor(mid, mid)
-                );
-            }
+                @Override
+                protected void onPostExecute(ArrayList<LocTableEntry> entries) {
+                    for (LocTableEntry entry : entries) {
+                        String location = entry.getLocation();
+                        String[] locationParts = location.split(",");
+                        double latitude = Double.parseDouble(locationParts[0]);
+                        double longitude = Double.parseDouble(locationParts[1]);
+                        String titleString = entry.getTimeStamp();
+                        if (BuildConfig.DEBUG) {
+                            Log.d(TAG, locationParts[0] + "  " + locationParts[1]);
+                        }
+                        mMap.addMarker(new MarkerOptions()
+                                        .position(new LatLng(latitude, longitude))
+                                                //.title(titleString)
+                                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.dot1))
+                                        .anchor(mid, mid)
+                        );
+                    }
+                    return;
+                }
+            }.execute();
         }
     }
 
-    private void populateMarker () {
+    private void populateMarker() {
         if (MarkerDBManager.getManager(this).getValuesCount() > 0) {
-            if (BuildConfig.DEBUG) { Log.d(TAG, "Populate Old Markers"); }
-            ArrayList<MarkerTableEntry> entries = MarkerDBManager.getManager(this).getAllValues();
-
-            for (MarkerTableEntry entry : entries) {
-                String location = entry.getLocation();
-
-                if (BuildConfig.DEBUG) { Log.d(TAG, location ); }
-                String[] locationParts = location.split(",");
-                double latitude = Double.parseDouble(locationParts[0]);
-                double longitude = Double.parseDouble(locationParts[1]);
-                String titleString = entry.getTitle();
-                String snippetString=entry.getNote();
-                if (BuildConfig.DEBUG) { Log.d(TAG, locationParts[0]+ "  " +  locationParts[1] ); }
-                // TODO: Need to add and save the marker.  Otherwise no other way to add info to marker
-                Marker mk = mMap.addMarker(new MarkerOptions()
-                                .position(new LatLng(latitude, longitude))
-                                .title(titleString)
-                                .snippet(snippetString)
-                );
-
+            if (BuildConfig.DEBUG) {
+                Log.d(TAG, "Populate Old Markers");
             }
+            new AsyncTask<Void, Void, ArrayList<MarkerTableEntry>>() {
+                @Override
+                protected ArrayList<MarkerTableEntry> doInBackground(Void... params) {
+                    return MarkerDBManager.getManager(getApplicationContext()).getAllValues();
+                }
+
+                @Override
+                protected void onPostExecute(ArrayList<MarkerTableEntry> entries) {
+                    for (MarkerTableEntry entry : entries) {
+                        String location = entry.getLocation();
+
+                        if (BuildConfig.DEBUG) {
+                            Log.d(TAG, location);
+                        }
+                        String[] locationParts = location.split(",");
+                        double latitude = Double.parseDouble(locationParts[0]);
+                        double longitude = Double.parseDouble(locationParts[1]);
+                        String titleString = entry.getTitle();
+                        String snippetString = entry.getNote();
+                        if (BuildConfig.DEBUG) {
+                            Log.d(TAG, locationParts[0] + "  " + locationParts[1]);
+                        }
+                        // TODO: Need to add and save the marker.  Otherwise no other way to add info to marker
+                        Marker mk = mMap.addMarker(new MarkerOptions()
+                                        .position(new LatLng(latitude, longitude))
+                                        .title(titleString)
+                                        .snippet(snippetString)
+                        );
+
+                    }
+
+                    return;
+                }
+
+            }.execute();
         }
     }
 
-    public void goToSettings(View v){
+    public void goToSettings(View v) {
 
-        ToggleButton btn=(ToggleButton)findViewById(R.id.settings_btn);
+        ToggleButton btn = (ToggleButton) findViewById(R.id.settings_btn);
 
-        if (btn.isChecked()){
+        if (btn.isChecked()) {
             mSystemUiHider.show();
-        }else {
+        } else {
             mSystemUiHider.hide();
         }
 
     }
 
 
-    public void loadCamera (View view) {
-        Location location= LocationServicesManager.getLocation();
+    public void loadCamera(View view) {
+        Location location = MotionDetectionLocationService.getLocation();
         // Add Marker without picture.
         if (BuildConfig.DEBUG) { Log.d(TAG, "LoadCamera button Clicked" +location); }
         if (location != null) {
@@ -324,8 +347,8 @@ public class MapsActivity extends FragmentActivity {
     }
 
 
-    public void addMarker (View v) {
-        Location location= LocationServicesManager.getLocation();
+    public void addMarker(View v) {
+        Location location = MotionDetectionLocationService.getLocation();
         // Add Marker without picture.
         if (BuildConfig.DEBUG) { Log.d(TAG, "AddMarker button Clicked" +location); }
         if (location != null) {
@@ -344,7 +367,7 @@ public class MapsActivity extends FragmentActivity {
         }
     }
 
-    public void loadAudioRecorder (View v) {
+    public void loadAudioRecorder(View v) {
         //Intent i = new Intent(this, AudioRecordActivity.class);
         //startActivity(i);
     }
@@ -400,7 +423,7 @@ public class MapsActivity extends FragmentActivity {
         }
     }
 
-    public boolean onMarkerClickDo (Marker marker) {
+    public boolean onMarkerClickDo(Marker marker) {
         if (marker.getTitle()!=null) {
             marker.showInfoWindow();
         }

@@ -24,7 +24,7 @@
             android:value="@string/google_maps_key" />
 
         <service android:name=".manager.LocationServicesManager" />
-        <service android:name=".manager.MotionDetectionService" />
+        <service android:name=".manager.MotionDetectionLocationService" />
 
         <activity
             android:name=".ui.LauncherActivity"

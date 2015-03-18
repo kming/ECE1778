@@ -66,6 +66,9 @@ public class LocationDBManager extends SQLiteOpenHelper {
         }
         return manager;
     }
+    public static LocationDBManager getManager() {
+        return manager;
+    }
 
     // Call this to initialize the database
     private static LocationDBManager initManager(Context context) {

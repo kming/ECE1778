@@ -11,13 +11,14 @@ import android.os.IBinder;
 import android.util.Log;
 
 import com.ece1778.footprints.BuildConfig;
-import com.ece1778.footprints.util.GeneralUtils;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+
+import java.util.ArrayList;
 
 /**
  * Created by Kei-Ming on 2015-03-10.
@@ -39,10 +40,13 @@ public class LocationServicesManager extends Service {
     private LocationRequest mLocationRequest = null;
     private Context mContext = null;
     private int mFastInterval = 5000;
-    private int mInterval = 10000;
+    private int mInterval = 15000;
     private static final int FAST_INTERVAL_DEFAULT = 5000;
     private static final int TWO_MINUTES = 1000 * 60 * 2;
-    public static final String LISTENER_KEY = "listener";
+
+    private ArrayList<Location> mLocations = null;
+    private static final int NUM_LOCATIONS = 3;
+    private static final double SPEED_THRESHOLD = 0.5;
 
     private GoogleApiClient.ConnectionCallbacks mLocationCallback =
             new GoogleApiClient.ConnectionCallbacks() {
@@ -78,31 +82,6 @@ public class LocationServicesManager extends Service {
      * being returned.
      */
 
-    @Override
-    public void onCreate() {
-        super.onCreate();
-        if (locationManager == null) {
-            initManager(getApplicationContext());
-        }
-        return;
-    }
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        if (BuildConfig.DEBUG) {Log.d(TAG, "onStartCommand");}
-        GeneralUtils.performOnBackgroundThread(new Runnable () {
-            @Override
-            public void run() {
-                if (locationManager != null) {
-                    locationManager.onStart();
-                }
-            }
-        });
-        return START_STICKY;
-    }
-    @Override
-    public void onDestroy() {
-        this.onStop();
-    }
 
     // Called on Resume - Needs to re-enable system.
     public static void onResume() {
@@ -162,12 +141,12 @@ public class LocationServicesManager extends Service {
 
     // get string representing location
     public String getLocationString() {
-        return LocationManager.locToString(mCurrentLocation);
+        return LocationServicesManager.locToString(mCurrentLocation);
     }
 
     // get string representing previous location
     public String getPreviousLocationString() {
-        return LocationManager.locToString(mPreviousLocation);
+        return LocationServicesManager.locToString(mPreviousLocation);
     }
 
     // set the location request update times
@@ -211,7 +190,9 @@ public class LocationServicesManager extends Service {
     // Initialize the google api client
     protected synchronized void buildGoogleApiClient() {
         int status = GooglePlayServicesUtil.isGooglePlayServicesAvailable(mContext);
-        Log.d(TAG, "Google Play Services Status: " + Integer.toString(status));
+        if (BuildConfig.DEBUG) {
+            Log.d(TAG, "Google Play Services Status: " + Integer.toString(status));
+        }
         if (status != ConnectionResult.SUCCESS) {
             Dialog dialog = GooglePlayServicesUtil.getErrorDialog(status, (Activity) mContext, 1);
             dialog.show();
@@ -263,29 +244,49 @@ public class LocationServicesManager extends Service {
 
     // Connection Functions.  Handles the listeners and callbacks
     protected void onConnected() {
-        Log.d(TAG, "onConnected Connection Callback");
+        if (BuildConfig.DEBUG) { Log.d(TAG, "onConnected Connection Callback");}
         startLocationUpdates();
         LocationServicesManager.onResume();
     }
 
     protected void onSuspended() {
-        Log.d(TAG, "onConnectedSuspended Connection Callback");
+        if (BuildConfig.DEBUG) { Log.d(TAG, "onConnectedSuspended Connection Callback"); }
         LocationServicesManager.onPause();
     }
 
     protected void onConnectionFail() {
-        Log.d(TAG, "onConnectionFail Listener");
+        if (BuildConfig.DEBUG) { Log.d(TAG, "onConnectionFail Listener"); }
     }
 
     protected void onLocationChanged(Location location) {
-        Log.d(TAG, "onConnectionChanged Listener");
+        if (BuildConfig.DEBUG) { Log.d(TAG, "onConnectionChanged Listener"); }
+
+        // Location changed,
+        // See if it is a better location than the previous location
         if (isBetterLocation(location, mCurrentLocation)) {
+            if (BuildConfig.DEBUG) { Log.d (TAG, "Found Better Location"); }
             mPreviousLocation = mCurrentLocation;
             mCurrentLocation = location;
             if (this.mLocationChangedListener != null) {
                 // Listener exists, call it
                 this.mLocationChangedListener.onChanged(location);
             }
+            if (mLocations.size() < NUM_LOCATIONS) {
+                mLocations.add(location);
+            } else {
+                mLocations.add(location);
+                mLocations.remove(0);
+            }
+        }
+        // See if we have "stopped" in the case that is is a good location.
+        if (isStopped(location, mCurrentLocation)) {
+            if (BuildConfig.DEBUG) { Log.d (TAG, "Stopped Moving"); }
+
+            Intent i = new Intent(this, MotionDetectionLocationService.class);
+            startService(i);
+            stopSelf();
+        } else {
+            if (BuildConfig.DEBUG) { Log.d (TAG, "Moving"); }
         }
 
     }
@@ -335,6 +336,7 @@ public class LocationServicesManager extends Service {
         } else if (isNewer && !isSignificantlyLessAccurate && isFromSameProvider) {
             return true;
         }
+
         return false;
     }
 
@@ -349,6 +351,46 @@ public class LocationServicesManager extends Service {
     }
 
     /**
+     * Determines whether one Location reading is better than the current Location fix
+     *
+     * @param location            The new Location that you want to evaluate
+     * @param currentBestLocation The current Location fix, to which you want to compare the new one
+     */
+    protected boolean isStopped(Location location, Location currentBestLocation) {
+        // At least 5 locations are needed to see if we stopped.
+        if (mLocations.size() < NUM_LOCATIONS) {
+            return false;
+        }
+
+        Location location1 = mLocations.get(0);
+        Location location2 = mLocations.get(NUM_LOCATIONS-1);
+
+        // Look at the speed of the current location
+        if (BuildConfig.DEBUG) { Log.d(TAG, "Speed: " + Float.toString(location2.getSpeed())); }
+        if (location2.hasSpeed()) {
+            if (location2.getSpeed() < SPEED_THRESHOLD) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        // Look at the timestamp and location differences and accuracy and determine if the location
+        // is stopped.
+        long dt = (location2.getTime() - location1.getTime())/1000; // time in seconds
+        float dx = location2.distanceTo(location1); // distance in meters
+
+        float speed = dx/dt;
+        if (BuildConfig.DEBUG) { Log.d(TAG, "Speed: " + Float.toString(speed)); }
+        if (speed < SPEED_THRESHOLD) {
+            return true;
+        }
+
+        return true;
+    }
+
+
+    /**
      * LocationChanged Listeners
      */
     public static void setLocationChangedListener(LocationChangedListener listener) {
@@ -358,8 +400,37 @@ public class LocationServicesManager extends Service {
     public interface LocationChangedListener {
         void onChanged(Location location);
     }
+
+    /**
+     * SERVICE RELATED ENTRY FUNCTIONS
+     */
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        if (locationManager == null) {
+            initManager(getApplicationContext());
+        }
+        return;
+    }
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        if (BuildConfig.DEBUG) {Log.d(TAG, "onStartCommand");}
+        if (locationManager != null) {
+            locationManager.mLocations = new ArrayList<Location>();
+            locationManager.onStart();
+        }
+        return START_STICKY;
+    }
+
     @Override
     public IBinder onBind(Intent intent) {
         return null;
+    }
+
+
+    @Override
+    public void onDestroy() {
+        this.onStop();
+        return;
     }
 }
