@@ -25,6 +25,7 @@ import android.widget.ToggleButton;
 import com.ece1778.footprints.BuildConfig;
 import com.ece1778.footprints.R;
 import com.ece1778.footprints.database.*;
+import com.ece1778.footprints.manager.InfoWindowAdapter;
 import com.ece1778.footprints.manager.LocationManager;
 import com.ece1778.footprints.manager.LocationServicesManager;
 import com.ece1778.footprints.manager.MarkerScrollAdapter;
@@ -216,7 +217,7 @@ public class MapsActivity extends FragmentActivity {
         //LatLng curLoc = new LatLng(location.getLatitude(), location.getLongitude());
         LatLng curLoc = new LatLng(43.65,-79.4);
 
-
+        mMap.setInfoWindowAdapter(new InfoWindowAdapter(getLayoutInflater()));
         mMap.setMyLocationEnabled(true);
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(curLoc, 13));
     }
@@ -255,10 +256,10 @@ public class MapsActivity extends FragmentActivity {
                 String titleString = entry.getTimeStamp();
                 if (BuildConfig.DEBUG) { Log.d(TAG, locationParts[0]+ "  " +  locationParts[1] ); }
                 mMap.addMarker(new MarkerOptions()
-                        .position(new LatLng(latitude, longitude))
-                        .title(titleString)
-                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.dot1))
-                        .anchor(mid,mid)
+                                .position(new LatLng(latitude, longitude))
+                                        //.title(titleString)
+                                .icon(BitmapDescriptorFactory.fromResource(R.drawable.dot1))
+                                .anchor(mid, mid)
                 );
             }
         }
@@ -276,14 +277,16 @@ public class MapsActivity extends FragmentActivity {
                 String[] locationParts = location.split(",");
                 double latitude = Double.parseDouble(locationParts[0]);
                 double longitude = Double.parseDouble(locationParts[1]);
-                String titleString = entry.getTime();
+                String titleString = entry.getTitle();
+                String snippetString=entry.getNote();
                 if (BuildConfig.DEBUG) { Log.d(TAG, locationParts[0]+ "  " +  locationParts[1] ); }
                 // TODO: Need to add and save the marker.  Otherwise no other way to add info to marker
-                mMap.addMarker(new MarkerOptions()
+                Marker mk = mMap.addMarker(new MarkerOptions()
                                 .position(new LatLng(latitude, longitude))
                                 .title(titleString)
-
+                                .snippet(snippetString)
                 );
+
             }
         }
     }
@@ -398,7 +401,9 @@ public class MapsActivity extends FragmentActivity {
     }
 
     public boolean onMarkerClickDo (Marker marker) {
-        // Marker was clicked.  Determine the marker info and pull the relevant information
+        if (marker.getTitle()!=null) {
+            marker.showInfoWindow();
+        }
         return true;
     }
 
