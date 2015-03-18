@@ -71,6 +71,10 @@ public class MarkerDBManager extends SQLiteOpenHelper {
         return manager;
     }
 
+    public static MarkerDBManager getManager() {
+        return manager;
+    }
+
     // Call this to initialize the database
     private static MarkerDBManager initManager(Context context) {
         manager = new MarkerDBManager(context);
