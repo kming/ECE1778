@@ -44,6 +44,8 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polygon;
 import com.google.android.gms.maps.model.PolygonOptions;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -184,7 +186,8 @@ public class MapsActivity extends FragmentActivity {
             });
         }
         // populate the map.
-        populateLocations();
+        //populateLocations();
+        populateLocationsFiltered();
         populateMarker();
         mSystemUiHider.hide();
     }
@@ -267,6 +270,35 @@ public class MapsActivity extends FragmentActivity {
         }
     }
 
+    private void populateLocationsFiltered () {
+        if (LocationDBManager.getManager(this).getValuesCount() > 0) {
+            double tol=0.0005;
+            ArrayList<LocTableEntry> entries= poly_decimate(tol);
+            LocationDBManager.getManager(this).deleteDatabase();
+            ArrayList<LatLng> vertices=new ArrayList<LatLng>();
+                    for (LocTableEntry entry : entries) {
+                        String location = entry.getLocation();
+                        String[] locationParts = location.split(",");
+                        double latitude = Double.parseDouble(locationParts[0]);
+                        double longitude = Double.parseDouble(locationParts[1]);
+                        String titleString = entry.getTimeStamp();
+                        if (BuildConfig.DEBUG) {
+                            Log.d(TAG, locationParts[0] + "  " + locationParts[1]);
+                        }
+                        /*mMap.addMarker(new MarkerOptions()
+                                        .position(new LatLng(latitude, longitude))
+                                                //.title(titleString)
+                                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.dot2))
+                                        .anchor(mid, mid)
+                        );*/
+                        vertices.add(new LatLng(latitude,longitude));
+                        LocationDBManager.getManager(this).addValue(entry);
+                    }
+            mMap.addPolyline(new PolylineOptions().addAll(vertices));
+
+        }
+    }
+
     private HashMap<LatLng,Marker> markerList= new HashMap<LatLng,Marker>();
 
     private void populateMarker () {
@@ -284,21 +316,12 @@ public class MapsActivity extends FragmentActivity {
                     Marker mk;
                     for (MarkerTableEntry entry : entries) {
                         String location = entry.getLocation();
-
-                        if (BuildConfig.DEBUG) {
-                            Log.d(TAG, location);
-                        }
-                        String[] locationParts = location.split(",");
-                        double latitude = Double.parseDouble(locationParts[0]);
-                        double longitude = Double.parseDouble(locationParts[1]);
                         String titleString = entry.getTitle();
                         String snippetString = entry.getNote();
-                        if (BuildConfig.DEBUG) {
-                            Log.d(TAG, locationParts[0] + "  " + locationParts[1]);
-                        }
+
                         // TODO: Need to add and save the marker.  Otherwise no other way to add info to marker
                         mk = mMap.addMarker(new MarkerOptions()
-                                        .position(new LatLng(latitude, longitude))
+                                        .position(GeneralUtils.stringToLocation(location))
                                         .title(titleString)
                                         .snippet(snippetString)
                         );
@@ -441,8 +464,8 @@ public class MapsActivity extends FragmentActivity {
                         new LatLng(90 - delta, 0),
                         new LatLng(90 - delta, -180 + delta),
                         new LatLng(0, -180 + delta))
-                .strokeWidth(0)
-                //.strokeColor(Color.RED)
+                //.strokeWidth(0)
+                .strokeColor(Color.RED)
                 .fillColor(Color.WHITE));
 
             ArrayList<LocTableEntry> entries = LocationDBManager.getManager(this).getAllValues();
@@ -463,8 +486,6 @@ public class MapsActivity extends FragmentActivity {
                 longitude=Math.round(longitude);
                 latitude=latitude/1000;
                 longitude=longitude/1000;
-
-
 
                 for(int i=-3;i<4;i++){
                     int a= (3-Math.abs(i))*2;
@@ -499,7 +520,8 @@ public class MapsActivity extends FragmentActivity {
 
         }else{
             mMap.clear();
-            populateLocations();
+            //populateLocations();
+            populateLocationsFiltered();
             populateMarker();
         }
 
@@ -509,9 +531,162 @@ public class MapsActivity extends FragmentActivity {
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(coordinates, 13));
 
         LatLng coord=new LatLng(coordinates.latitude+0.012,coordinates.longitude-0.001);
+
         if (markerList.get(coord)!=null) {
             markerList.get(coord).showInfoWindow();
         }
     }
+
+    // dot product (3D) which allows vector operations in arguments
+    /*#define dot(u,v)  ((u).x * (v).x + (u).y * (v).y + (u).z * (v).z)
+            #define norm2(v)  dot(v,v)         // norm2 = squared length of vector
+            #define norm(v)   sqrt(norm2(v))   // norm = length of vector
+            #define d2(u,v)   norm2(u-v)       // distance squared = norm2 of difference
+            #define d(u,v)    norm(u-v)        // distance = norm of difference*/
+    private double dot(LatLng u, LatLng v){
+        double dotProduct=u.latitude*v.latitude+u.longitude*v.longitude;
+        return dotProduct;
+    }
+
+    private double norm2(LatLng v){
+        double ans=dot(v,v);
+        return ans;
+    }
+
+    private double norm(LatLng v){
+        return Math.sqrt(norm2(v));
+    }
+
+    private LatLng UMinusV(LatLng u, LatLng v){
+        double lat=u.latitude-v.latitude;
+        double lng=u.longitude-v.longitude;
+        LatLng difference=new LatLng(lat,lng);
+        return difference;
+    }
+
+    private double d2(LatLng u, LatLng v){
+        LatLng w=UMinusV(u,v);
+        double ans=norm2(w);
+        return ans;
+    }
+
+    private double d(LatLng u, LatLng v){
+        LatLng w=UMinusV(u,v);
+        double ans=norm(w);
+        return ans;
+    }
+
+    public int[]  mk;
+    // poly_decimate(): - remove vertices to get a smaller approximate polygon
+//    Input:  tol = approximation tolerance
+//            V[] = polyline array of vertex points
+//            n   = the number of points in V[]
+//    Output: sV[]= reduced polyline vertexes (max is n)
+//    Return: m   = the number of points in sV[]*/
+    private ArrayList<LocTableEntry> poly_decimate(double tol)
+    {
+        ArrayList<LocTableEntry> V = LocationDBManager.getManager(this).getAllValues();
+        int n=LocationDBManager.getManager(this).getValuesCount();
+        ArrayList<LocTableEntry> sV = new ArrayList<LocTableEntry>();
+        int    i, k, m, pv;             // misc counters
+        double  tol2 = tol * tol;        // tolerance squared
+        ArrayList<LocTableEntry> vt = new ArrayList<LocTableEntry>();       // vertex buffer
+        mk = new int[n];   // marker  buffer
+
+        // STAGE 1.  Vertex Reduction within tolerance of  prior vertex cluster
+        vt.add(0,V.get(0));               // start at the beginning
+        for (i=k=1, pv=0; i<n; i++) {
+
+            if (d2(GeneralUtils.stringToLocation(V.get(i).getLocation()),
+                    GeneralUtils.stringToLocation(V.get(pv).getLocation())) > tol2) {
+                vt.add(k,V.get(i));
+                k++;
+                pv = i;
+            }
+        }
+        if (pv < n-1) {
+            if (BuildConfig.DEBUG) { Log.d(TAG, "vortex elimination "+V.get(n-1).getLocation()+" "+n+" "+k);}
+            vt.add(k, V.get(n-1));       // finish at the end
+            k++;
+        }
+
+        // STAGE 2.  Douglas-Peucker polyline reduction
+        mk[0] = mk[k-1] = 1;       //  mark the first and last vertexes
+        poly_decimateDP(tol, vt, 0, k-1);
+
+        // copy marked vertices to the reduced polyline
+        for (i=m=0; i<k; i++) {
+            if (mk[i]!=0) {
+                sV.add(m, vt.get(i));
+                m++;
+            }
+        }
+        //vt.clear();
+        return sV;         //  m vertices in reduced polyline
+    }
+
+
+    // poly_decimateDP():
+//  This is the Douglas-Peucker recursive reduction routine
+//  It marks vertexes that are part of the reduced polyline
+//  for approximating the polyline subchain v[j] to v[k].
+//    Input:  tol  = approximation tolerance
+//            v[]  = polyline array of vertex points
+//            j,k  = indices for the subchain v[j] to v[k]
+//    Output: mk[] = array of markers matching vertex array v[]
+    private void poly_decimateDP( double tol, ArrayList<LocTableEntry> v, int j, int k)
+    {
+        if (k <= j+1) // there is nothing to decimate
+            return;
+
+        // check for adequate approximation by segment S from v[j] to v[k]
+        int     maxi = j;           // index of vertex farthest from S
+        double   maxd2 = 0;          // distance squared of farthest vertex
+        double tol2 = tol * tol;   // tolerance squared
+        LatLng S0 = GeneralUtils.stringToLocation(v.get(j).getLocation());   //start point of segment
+        LatLng S1 = GeneralUtils.stringToLocation(v.get(k).getLocation());   //end point of segment
+        LatLng  u = UMinusV(S1,S0);    // segment direction vector
+        double  cu = dot(u,u);      // segment length squared
+
+        // test each vertex v[i] for max distance from S
+        // compute using the Algorithm dist_Point_to_Segment()
+        // Note: this works in any dimension (2D, 3D, ...)
+        LatLng  w;
+        LatLng   Pb;                 // base of perpendicular from v[i] to S
+        double  b, cw, dv2;         // dv2 = distance v[i] to S squared
+
+        for (int i=j+1; i<k; i++)
+        {
+            // compute distance squared
+            w = UMinusV(GeneralUtils.stringToLocation(v.get(i).getLocation()),S0);
+            cw = dot(w,u);
+            if ( cw <= 0 )
+                dv2 =d2(GeneralUtils.stringToLocation(v.get(i).getLocation()), S0);
+            else if ( cu <= cw )
+                dv2 =d2(GeneralUtils.stringToLocation(v.get(i).getLocation()), S1);
+            else {
+                b = cw / cu;
+                Pb = UMinusV(S0,new LatLng(-b*u.latitude,-b*u.longitude));
+                dv2 =d2(GeneralUtils.stringToLocation(v.get(i).getLocation()), Pb);
+            }
+            // test with current max distance  squared
+            if (dv2 <= maxd2)
+                continue;
+            // v[i] is a new max vertex
+            maxi = i;
+            maxd2 = dv2;
+        }
+        if (maxd2 > tol2)         // error is worse than the tolerance
+        {
+            // split the polyline at the farthest  vertex from S
+            mk[maxi] = 1;       // mark v[maxi] for the reduced polyline
+            // recursively decimate the two subpolylines at v[maxi]
+            poly_decimateDP(tol, v, j, maxi);  // polyline v[j] to v[maxi]
+            poly_decimateDP(tol, v, maxi, k);  // polyline v[maxi] to v[k]
+        }
+        // else the approximation is OK, so ignore intermediate vertexes
+        return;
+    }
+
 
 }
