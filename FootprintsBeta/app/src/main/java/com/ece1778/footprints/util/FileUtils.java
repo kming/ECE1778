@@ -117,6 +117,9 @@ public class FileUtils {
         } else if (type == FileColumns.MEDIA_TYPE_VIDEO) {
             mediaFile = new File(mediaStorageDir.getPath() + File.separator +
                     "VID_" + timeStamp + ".mp4");
+        } else if (type == FileColumns.MEDIA_TYPE_AUDIO) {
+            mediaFile = new File(mediaStorageDir.getPath() + File.separator +
+                    "AUD_" + timeStamp + ".3gp");
         } else {
             return null;
         }

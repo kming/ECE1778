@@ -42,7 +42,7 @@ public class MotionDetectionLocationService extends Service {
     private static boolean mMotionDetected = false;
     private static ArrayList<Float> mValues = new ArrayList<Float>();
     private static float mTotalValue = 0;
-    private static final float NUMPOINTS = 5;
+    private static final float NUMPOINTS = 4;
     private static final float THRESHOLD = 2;
 
 
@@ -55,7 +55,10 @@ public class MotionDetectionLocationService extends Service {
     private LocationRequest mLocationRequest = null;
     private Context mContext = null;
     private int mFastInterval = 5000;
-    private int mInterval = 15000;
+    private int mInterval = 20000;
+    private boolean mFastDetect = true;
+    private int mFastIntervalInitial = 5000;
+    private int mIntervalInitial = 10000;
     private static final int FAST_INTERVAL_DEFAULT = 5000;
     private static final int TWO_MINUTES = 1000 * 60 * 2;
 
@@ -140,6 +143,10 @@ public class MotionDetectionLocationService extends Service {
                     // Stop Detection of Acceleration
                     resetListener();
                     // Start Location Detection
+                    if (!mFastDetect) {
+                        mFastDetect = true;
+                        setRefreshRate(mIntervalInitial, mFastIntervalInitial);
+                    }
                     onResume();
                 }
             }
@@ -341,11 +348,15 @@ public class MotionDetectionLocationService extends Service {
      * Determines whether one person is stopped based on the speed of the person
      */
     protected boolean isStopped() {
-        // At least 5 locations are needed to see if we stopped.
+        // At least num locations are needed to see if we stopped.
         if (mLocations.size() < NUM_LOCATIONS) {
             return false;
         }
-
+        // After the initial measurements, switch to slow measurements
+        if (mFastDetect) {
+            mFastDetect = false;
+            setRefreshRate(mInterval, mFastInterval);
+        }
         Location location1 = mLocations.get(0);
         Location location2 = mLocations.get(NUM_LOCATIONS-1);
 

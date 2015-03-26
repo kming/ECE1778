@@ -69,8 +69,7 @@
                 android:src="@drawable/audio"
                 android:adjustViewBounds="true"
                 android:scaleType="fitCenter"
-                android:background="@null"
-                android:onClick="loadAudioRecorder"/>
+                android:background="@null"/>
 
         </LinearLayout>
 
@@ -103,13 +102,13 @@
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|center_horizontal"
             android:background="@color/white_overlay"
-            android:orientation="horizontal"
+            android:orientation="vertical"
             tools:ignore="UselessParent">
 
             <CheckBox
                 android:id="@+id/fog_btn"
                 style="?metaButtonBarButtonStyle"
-                android:layout_width="0dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:layout_margin="20dip"
@@ -120,13 +119,25 @@
             <CheckBox
                 android:id="@+id/view_recom_btn"
                 style="?metaButtonBarButtonStyle"
-                android:layout_width="0dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="2"
                 android:layout_margin="20dip"
                 android:text="Recommend Markers"
                 android:textColor="@color/body_text_color"
                 android:onClick="showRecommendations"/>
+
+            <CheckBox
+                android:id="@+id/toggle_tracking"
+                style="?metaButtonBarButtonStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:layout_margin="20dip"
+                android:text="Tracking Enabled"
+                android:textColor="@color/body_text_color"
+                android:onClick="toggleTracking"
+                android:checked="true"/>
 
         </LinearLayout>
     </FrameLayout>

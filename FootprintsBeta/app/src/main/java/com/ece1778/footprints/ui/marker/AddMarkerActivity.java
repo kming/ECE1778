@@ -172,7 +172,6 @@ public class AddMarkerActivity extends Activity {
         ImageView imageView = (ImageView) findViewById(R.id.marker_pic);
         BitmapDrawable bd = (BitmapDrawable) imageView.getDrawable();
         if (bd != null) {
-            bd.getBitmap().recycle();
             imageView.setImageBitmap(null);
         }
 
@@ -238,7 +237,9 @@ public class AddMarkerActivity extends Activity {
     public void saveMarker(View view){
         addMarkerToDB();
         Intent intent = new Intent(this, MapsActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
+        finish();
     }
 
     public void cancelMarker(View view){

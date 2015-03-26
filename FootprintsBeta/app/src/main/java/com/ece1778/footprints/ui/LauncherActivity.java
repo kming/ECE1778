@@ -187,6 +187,7 @@ public class LauncherActivity extends Activity {
         if (isGPS) {
             Toast.makeText(this, "Logon", Toast.LENGTH_SHORT).show();
             Intent i = new Intent(this, MapsActivity.class);
+            i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(i);
         } else {
             startActivityForResult(new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS), 0);
