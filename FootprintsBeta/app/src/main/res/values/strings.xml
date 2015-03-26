@@ -3,7 +3,7 @@
     <string name="app_tagline">Explore your city one step at a time</string>
     <string name="title_activity_maps">Map</string>
     <string name="title_activity_camera">Record a Sight</string>
-    <string name="title_activity_add_marker">Add a Marker</string>
+    <string name="title_activity_add_marker">Add a Landmark</string>
     <string name="title_activity_view_marker">Whats Cool?</string>
 
     <!-- Google Maps API Key -->

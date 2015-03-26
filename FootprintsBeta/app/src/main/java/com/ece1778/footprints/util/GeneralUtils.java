@@ -2,6 +2,8 @@ package com.ece1778.footprints.util;
 
 import android.location.Location;
 
+import com.google.android.gms.maps.model.LatLng;
+
 import java.util.Calendar;
 
 /**
@@ -31,6 +33,14 @@ public class GeneralUtils {
         return location.getLatitude() + "," +
                 location.getLongitude();
     }
+
+    public static LatLng stringToLocation(String location) {
+        String[] locationParts = location.split(",");
+        double latitude = Double.parseDouble(locationParts[0]);
+        double longitude = Double.parseDouble(locationParts[1]);
+        return new LatLng(latitude,longitude);
+    }
+
 
     public static String timeMilliToString(long value) {
         Calendar calendar = Calendar.getInstance();

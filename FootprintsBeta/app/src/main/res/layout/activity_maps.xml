@@ -35,30 +35,30 @@
             android:layout_margin="20dip">
 
             <ImageButton
-                android:id="@+id/camera_btn"
+                android:id="@+id/new_note_btn"
                 android:layout_width="0dp"
                 android:layout_weight="2"
                 android:layout_height="wrap_content"
-                android:src="@drawable/camera"
+                android:src="@drawable/add"
                 android:layout_gravity="center_vertical"
                 android:adjustViewBounds="true"
                 android:scaleType="fitCenter"
                 android:background="@null"
-                android:onClick="loadCamera"/>
+                android:onClick="addMarker"/>
 
             <ImageButton
-                android:id="@+id/new_note_btn"
+                android:id="@+id/camera_btn"
                 android:layout_width="0dp"
                 android:layout_weight="3"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="30dip"
                 android:layout_marginRight="30dip"
                 android:layout_gravity="center_vertical"
-                android:src="@drawable/add"
+                android:src="@drawable/camera"
                 android:adjustViewBounds="true"
                 android:scaleType="fitCenter"
                 android:background="@null"
-                android:onClick="addMarker"/>
+                android:onClick="loadCamera"/>
 
             <ImageButton
                 android:id="@+id/record_btn"
@@ -123,7 +123,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="2"
                 android:layout_margin="20dip"
-                android:text="Recommend Markers"
+                android:text="Recommend Landmarks"
                 android:textColor="@color/body_text_color"
                 android:onClick="showRecommendations"/>
 
