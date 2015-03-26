@@ -285,17 +285,19 @@ public class MapsActivity extends FragmentActivity {
                         if (BuildConfig.DEBUG) {
                             Log.d(TAG, locationParts[0] + "  " + locationParts[1]);
                         }
-                        /*mMap.addMarker(new MarkerOptions()
+                        mMap.addMarker(new MarkerOptions()
                                         .position(new LatLng(latitude, longitude))
                                                 //.title(titleString)
                                         .icon(BitmapDescriptorFactory.fromResource(R.drawable.dot2))
                                         .anchor(mid, mid)
-                        );*/
+                        );
                         vertices.add(new LatLng(latitude,longitude));
                         LocationDBManager.getManager(this).addValue(entry);
                     }
-            mMap.addPolyline(new PolylineOptions().addAll(vertices));
-
+            mMap.addPolyline(new PolylineOptions()
+                    .addAll(vertices)
+                    .color(0xaaFFDE00)
+                    .width(20));
         }
     }
 
@@ -317,7 +319,7 @@ public class MapsActivity extends FragmentActivity {
                     for (MarkerTableEntry entry : entries) {
                         String location = entry.getLocation();
                         String titleString = entry.getTitle();
-                        String snippetString = entry.getNote();
+                        String snippetString = entry.getNote()+ " .,.," + entry.getPicture();
 
                         // TODO: Need to add and save the marker.  Otherwise no other way to add info to marker
                         mk = mMap.addMarker(new MarkerOptions()
@@ -687,6 +689,5 @@ public class MapsActivity extends FragmentActivity {
         // else the approximation is OK, so ignore intermediate vertexes
         return;
     }
-
 
 }

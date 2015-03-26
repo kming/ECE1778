@@ -48,28 +48,14 @@ public class InfoWindowAdapter implements GoogleMap.InfoWindowAdapter {
             textViewTitle = (TextView) v.findViewById(R.id.balloon_item_title);
             textViewTitle.setText(marker.getTitle());
             textViewSnippet = (TextView)v.findViewById(R.id.balloon_item_snippet);
-            textViewSnippet.setText(marker.getSnippet());
-            String imageURI=null;
+            String[] snippet=marker.getSnippet().split(",.,.");
+            textViewSnippet.setText(snippet[0]);
+            String imageURI=snippet[1];
 
             if (BuildConfig.DEBUG) {
-                Log.d(TAG, "getInfoWindow");
+                Log.d(TAG, "getInfoWindow"+imageURI);
             }
 
-
-            List<MarkerTableEntry> savedEntries = MarkerDBManager.getManager().getAllValues();
-            if (BuildConfig.DEBUG) {
-                Log.d(TAG, "imageURI= " + savedEntries.size());
-            }
-            for(MarkerTableEntry entry:savedEntries){
-                Log.d(TAG, "imageURI= |" + entry.getTitle()+ "|"+marker.getTitle()+"|");
-                if (entry.getTitle()==marker.getTitle()){
-                    imageURI=entry.getPicture();
-                    if (BuildConfig.DEBUG) {
-                        Log.d(TAG, "imageURI= " + imageURI);
-                    }
-                    break;
-                }
-            }
             imageViewIcon = (ImageView)v.findViewById(R.id.balloon_item_image);
 
             if (imageURI != null) {
