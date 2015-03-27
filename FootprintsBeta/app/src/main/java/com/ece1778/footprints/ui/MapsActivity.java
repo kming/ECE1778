@@ -337,7 +337,7 @@ public class MapsActivity extends FragmentActivity {
                         mMap.addMarker(new MarkerOptions()
                                         .position(new LatLng(latitude, longitude))
                                                 //.title(titleString)
-                                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.dot2))
+                                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.dot1))
                                         .anchor(mid, mid)
                         );
                         vertices.add(new LatLng(latitude,longitude));
