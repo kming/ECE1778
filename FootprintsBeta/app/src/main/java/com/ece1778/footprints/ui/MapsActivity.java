@@ -4,6 +4,7 @@ import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.location.Location;
 import android.net.Uri;
@@ -73,11 +74,18 @@ public class MapsActivity extends FragmentActivity {
     private long mUpTime = 0;
     private Uri mRecording = null;
 
+    public static final String LAST_SAVED_POINT = "LastSavedPoint";
+    public int saveLastPointProcessed;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+
+        //restore preferences
+
+        SharedPreferences settings = getSharedPreferences(LAST_SAVED_POINT, 0);
+        saveLastPointProcessed= settings.getInt("lastPoint",0);
 
         Button btn = (Button) findViewById(R.id.settings_btn);
         btn.setPressed(false);
@@ -207,6 +215,7 @@ public class MapsActivity extends FragmentActivity {
     protected void onPause() {
         super.onPause();
         mMap.setOnMarkerClickListener(null);
+        mMap.setOnInfoWindowClickListener(null);
     }
 
     @Override
@@ -217,7 +226,17 @@ public class MapsActivity extends FragmentActivity {
 
     @Override
     protected void onStop() {
+
         super.onStop();
+
+        // We need an Editor object to make preference changes.
+        // All objects are from android.context.Context
+        SharedPreferences settings = getSharedPreferences(LAST_SAVED_POINT, 0);
+        SharedPreferences.Editor editor = settings.edit();
+        editor.putInt("lastPoint", saveLastPointProcessed);
+
+        // Commit the edits!
+        editor.commit();
     }
 
     @Override
@@ -230,6 +249,13 @@ public class MapsActivity extends FragmentActivity {
                 @Override
                 public boolean onMarkerClick(Marker marker) {
                     return onMarkerClickDo(marker);
+                }
+            });
+            mMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
+                @Override
+                public void onInfoWindowClick(Marker marker) {
+                    onInfoWindowClickDo(marker);
+                    return;
                 }
             });
         }
@@ -369,7 +395,7 @@ public class MapsActivity extends FragmentActivity {
                     for (MarkerTableEntry entry : entries) {
                         String location = entry.getLocation();
                         String titleString = entry.getTitle();
-                        String snippetString = entry.getNote()+ " .,.," + entry.getPicture();
+                        String snippetString = entry.getNote()+ " .,.," + entry.getPicture()+" .,.,"+entry.getAudio();
 
                         // TODO: Need to add and save the marker.  Otherwise no other way to add info to marker
                         mk = mMap.addMarker(new MarkerOptions()
@@ -444,7 +470,9 @@ public class MapsActivity extends FragmentActivity {
             Log.d(TAG, "Record Audio button Event" + location);
         }
         if (location != null) {
+
             String timeString = GeneralUtils.timeMilliToString(location.getTime());
+
             switch (event.getAction()) {
                 case MotionEvent.ACTION_UP:
                     // Stop the Recording
@@ -563,6 +591,13 @@ public class MapsActivity extends FragmentActivity {
             marker.showInfoWindow();
         }
         return true;
+    }
+
+    public void onInfoWindowClickDo(Marker marker) {
+        if (marker.getTitle() != null) {
+
+        }
+        return;
     }
 
     public void generateFog(View v) {
@@ -712,13 +747,27 @@ public class MapsActivity extends FragmentActivity {
         // STAGE 1.  Vertex Reduction within tolerance of  prior vertex cluster
         vt.add(0,V.get(0));               // start at the beginning
         for (i=k=1, pv=0; i<n; i++) {
+            if(i<saveLastPointProcessed){
+                if (d2(GeneralUtils.stringToLocation(V.get(i).getLocation()),
+                        GeneralUtils.stringToLocation(V.get(pv).getLocation())) < tol2) {
+                    continue;
+                }
 
-            if (d2(GeneralUtils.stringToLocation(V.get(i).getLocation()),
-                    GeneralUtils.stringToLocation(V.get(pv).getLocation())) > tol2) {
-                vt.add(k,V.get(i));
-                k++;
-                pv = i;
+                if (i<n-1) {
+                    double distance1 = d2(GeneralUtils.stringToLocation(V.get(i).getLocation()),
+                            GeneralUtils.stringToLocation(V.get(i - 1).getLocation()));
+
+                    double distance2 = d2(GeneralUtils.stringToLocation(V.get(i + 1).getLocation()),
+                            GeneralUtils.stringToLocation(V.get(i - 1).getLocation()));
+
+                    if (distance1 > distance2 / 1.5) {
+                        continue;
+                    }
+                }
             }
+            vt.add(k,V.get(i));
+            k++;
+            pv = i;
         }
         if (pv < n-1) {
             if (BuildConfig.DEBUG) { Log.d(TAG, "vortex elimination "+V.get(n-1).getLocation()+" "+n+" "+k);}
@@ -728,15 +777,16 @@ public class MapsActivity extends FragmentActivity {
 
         // STAGE 2.  Douglas-Peucker polyline reduction
         mk[0] = mk[k-1] = 1;       //  mark the first and last vertexes
-        poly_decimateDP(tol, vt, 0, k-1);
+        poly_decimateDP(tol, vt, saveLastPointProcessed, k-1);
 
         // copy marked vertices to the reduced polyline
         for (i=m=0; i<k; i++) {
-            if (mk[i]!=0) {
+            if (mk[i]!=0 || i< saveLastPointProcessed) {
                 sV.add(m, vt.get(i));
                 m++;
             }
         }
+        saveLastPointProcessed=k-1;
         //vt.clear();
         return sV;         //  m vertices in reduced polyline
     }

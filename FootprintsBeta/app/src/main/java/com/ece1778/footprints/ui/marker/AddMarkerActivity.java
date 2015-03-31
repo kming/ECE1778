@@ -4,6 +4,7 @@ import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.media.ExifInterface;
@@ -11,6 +12,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.MediaStore;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -19,6 +21,8 @@ import android.view.MenuItem;
 import android.support.v4.app.NavUtils;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.ece1778.footprints.BuildConfig;
 import com.ece1778.footprints.R;
@@ -85,6 +89,8 @@ public class AddMarkerActivity extends Activity {
     private String mTimestamp = null;
     private String mTitle = null;
 
+    private static int RESULT_LOAD_IMAGE = 1;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -97,7 +103,7 @@ public class AddMarkerActivity extends Activity {
 
         // Set up an instance of SystemUiHider to control the system UI for
         // this activity.
-        mSystemUiHider = SystemUiHider.getInstance(this, contentView, HIDER_FLAGS);
+/*        mSystemUiHider = SystemUiHider.getInstance(this, contentView, HIDER_FLAGS);
         mSystemUiHider.setup();
         mSystemUiHider
                 .setOnVisibilityChangeListener(new SystemUiHider.OnVisibilityChangeListener() {
@@ -153,7 +159,7 @@ public class AddMarkerActivity extends Activity {
         // operations to prevent the jarring behavior of controls going away
         // while interacting with the UI.
         //findViewById(R.id.).setOnTouchListener(mDelayHideTouchListener);
-
+*/
         // Populate Elements after the view is created, so the size is known.
         populateElements();
     }
@@ -212,10 +218,66 @@ public class AddMarkerActivity extends Activity {
         } else {
             // In the case where no photo, set default picture.
             // TODO: Look into creating a snapshot of the google maps and using that instead.
-            imageView.setImageResource(R.drawable.default_image);
+            imageView.setImageResource(R.drawable.default_image2);
+
+
+            imageView.setOnClickListener(new View.OnClickListener() {
+
+                @Override
+                public void onClick(View view) {
+                    Intent gallery = new Intent(
+                            Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+
+                    startActivityForResult(gallery, RESULT_LOAD_IMAGE);
+                }
+
+            });
+
         }
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == RESULT_LOAD_IMAGE && resultCode == RESULT_OK && null != data) {
+            Uri selectedImage = data.getData();
+            String[] filePathColumn = { MediaStore.Images.Media.DATA };
+
+            Cursor cursor = getContentResolver().query(selectedImage,
+                    filePathColumn, null, null, null);
+            cursor.moveToFirst();
+
+            int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+            String picturePath = cursor.getString(columnIndex);
+            cursor.close();
+
+            ImageView imageView = (ImageView) findViewById(R.id.marker_pic);
+            mPictureUri=picturePath;
+            try {
+                ExifInterface exifInterface = new ExifInterface(Uri.parse(mPictureUri).getPath());
+                if (exifInterface.hasThumbnail()) {
+                    if (BuildConfig.DEBUG) {Log.d (TAG, "Loading Thumbnail"); }
+                    byte[] data2 = exifInterface.getThumbnail();
+                    imageView.setImageBitmap(BitmapFactory.decodeByteArray(data2, 0, data2.length));
+                } else {
+                    imageView.setImageBitmap(
+                            decodeSampledBitmapFromFile(new File(Uri.parse(mPictureUri).getPath()),
+                                    300,
+                                    300)
+                    );
+                }
+            } catch (FileNotFoundException e) {
+                if (BuildConfig.DEBUG) {Log.e (TAG, e.getMessage());}
+            } catch (IOException e) {
+                if (BuildConfig.DEBUG) {Log.e (TAG, e.getMessage());}
+            }
+
+
+        }
+
+
+    }
 
     private void addMarkerToDB(){
         EditText note= (EditText)findViewById(R.id.message_field);
@@ -235,11 +297,16 @@ public class AddMarkerActivity extends Activity {
     }
 
     public void saveMarker(View view){
-        addMarkerToDB();
-        Intent intent = new Intent(this, MapsActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        startActivity(intent);
-        finish();
+        EditText title=(EditText)findViewById(R.id.location_field);
+        if (title.getText().toString()!="") {
+            addMarkerToDB();
+            Intent intent = new Intent(this, MapsActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(intent);
+            finish();
+        }else{
+            Toast.makeText(this, "Please name the spot.", Toast.LENGTH_SHORT).show();
+        }
     }
 
     public void cancelMarker(View view){
@@ -261,7 +328,7 @@ public class AddMarkerActivity extends Activity {
         // Trigger the initial hide() shortly after the activity has been
         // created, to briefly hint to the user that UI controls
         // are available.
-        delayedHide(100);
+        //delayedHide(100);
     }
 
     /**
@@ -299,7 +366,7 @@ public class AddMarkerActivity extends Activity {
      * system UI. This is to prevent the jarring behavior of controls going away
      * while interacting with activity UI.
      */
-    View.OnTouchListener mDelayHideTouchListener = new View.OnTouchListener() {
+/*    View.OnTouchListener mDelayHideTouchListener = new View.OnTouchListener() {
         @Override
         public boolean onTouch(View view, MotionEvent motionEvent) {
             if (AUTO_HIDE) {
@@ -316,13 +383,13 @@ public class AddMarkerActivity extends Activity {
             mSystemUiHider.hide();
         }
     };
-
+*/
     /**
      * Schedules a call to hide() in [delay] milliseconds, canceling any
      * previously scheduled calls.
      */
-    private void delayedHide(int delayMillis) {
+/*    private void delayedHide(int delayMillis) {
         mHideHandler.removeCallbacks(mHideRunnable);
         mHideHandler.postDelayed(mHideRunnable, delayMillis);
     }
-}
+*/}

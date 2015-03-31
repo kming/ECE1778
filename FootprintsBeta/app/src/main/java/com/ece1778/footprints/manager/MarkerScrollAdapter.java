@@ -57,6 +57,10 @@ public class MarkerScrollAdapter extends RecyclerView.Adapter<MarkerScrollAdapte
         markerScrollViewHolder.vLocation=new LatLng(latitude,longitude);
 
         String mPictureUri = marker.getPicture();
+        String mAudioUri=marker.getAudio();
+        if (BuildConfig.DEBUG) {
+            Log.d(TAG, "Loading Audio File "+mAudioUri);
+        }
         if (mPictureUri != null) {
             try {
                 ExifInterface exifInterface = new ExifInterface(Uri.parse(mPictureUri).getPath());
@@ -82,7 +86,10 @@ public class MarkerScrollAdapter extends RecyclerView.Adapter<MarkerScrollAdapte
                     Log.e(TAG, e.getMessage());
                 }
             }
-        } else {
+        }else if (mAudioUri!=null){
+            // In the case where has audio but no photo, set default picture.
+            markerScrollViewHolder.vImage.setImageResource(R.drawable.default_image_audio);
+        }else {
             // In the case where no photo, set default picture.
             // TODO: Look into creating a snapshot of the google maps and using that instead.
             markerScrollViewHolder.vImage.setImageResource(R.drawable.default_image);
