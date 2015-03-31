@@ -66,7 +66,7 @@ public class MotionDetectionLocationService extends Service {
     private ArrayList<Location> mLocations = null;
     private static final int NUM_LOCATIONS = 3;
     private static final double SPEED_MIN_THRESHOLD = 0.3;
-    private static final double SPEED_MAX_THRESHOLD = 1.5;
+    private static final double SPEED_MAX_THRESHOLD = 50;
 
     /**
      * DEFAULT SERVICES FUNCTIONS - This is the functions necessary for the service to run.  It is
@@ -518,8 +518,8 @@ public class MotionDetectionLocationService extends Service {
         // See if we have "stopped"
         if (isStopped(location, mCurrentLocation)) {
             if (BuildConfig.DEBUG) { Log.d (TAG, "Stopped Moving"); }
-            this.onPause();
-            this.setListener();
+            //this.onPause();
+            //this.setListener();
         } else {
             if (BuildConfig.DEBUG) { Log.d (TAG, "Moving"); }
         }

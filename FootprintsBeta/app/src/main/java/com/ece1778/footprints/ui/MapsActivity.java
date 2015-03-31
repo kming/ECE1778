@@ -95,7 +95,6 @@ public class MapsActivity extends FragmentActivity {
         setContentView(R.layout.activity_maps);
 
         //restore preferences
-
         SharedPreferences settings = getSharedPreferences(LAST_SAVED_POINT, 0);
         saveLastPointProcessed= settings.getInt("lastPoint", 0);
 
@@ -622,6 +621,7 @@ public class MapsActivity extends FragmentActivity {
         float delta = 0.1f;
 
         if (fogOnOff.isChecked()) {
+            // Populate Fog -  If holes overlap --> Causes Fog to not draw
             Polygon polygon = mMap.addPolygon(new PolygonOptions()
                 .add(new LatLng(90, -180),
                         new LatLng(-90 + delta, -180 + delta),
@@ -633,18 +633,19 @@ public class MapsActivity extends FragmentActivity {
                         new LatLng(90 - delta, -180 + delta),
                         new LatLng(0, -180 + delta))
                 //.strokeWidth(0)
-                .strokeColor(Color.RED)
-                .fillColor(Color.WHITE));
+                .strokeColor(Color.TRANSPARENT)
+                .fillColor(Color.argb(200, 255, 255, 255)));
 
             ArrayList<LocTableEntry> entries = LocationDBManager.getManager(this).getAllValues();
             ArrayList<ArrayList<LatLng>> holes = new ArrayList<ArrayList<LatLng>>();
-            ArrayList<LatLng> holesMidPt = new ArrayList<LatLng>();
+            ArrayList<String> intMidStringArray = new ArrayList<>();
             ArrayList<LatLng> hole;
 
-            LatLng tempMidPt;
+           String tempMidString;
             double latitude;
             double longitude;
 
+            // From the locations, determine which grid it belongs in.
             for (LocTableEntry entry : entries) {
                 String location = entry.getLocation();
                 String[] locationParts = location.split(",");
@@ -652,26 +653,31 @@ public class MapsActivity extends FragmentActivity {
                 longitude = Double.parseDouble(locationParts[1]) * 1000;
                 latitude = Math.round(latitude);
                 longitude = Math.round(longitude);
-                latitude = latitude / 1000;
-                longitude = longitude / 1000;
 
-                for(int i=-3;i<4;i++){
-                    int a= (3-Math.abs(i))*2;
+                // grid spacing of 1000th of a degree.
+                int intLat = (int) latitude;
+                int intLong = (int) longitude;
+
+                // Store it as an integer string to prevent any floating point issues
+                for(int i=-2;i<=2;i++){
+                    int a= (2-Math.abs(i))*2;
 
                     for(int j=-a;j<a+1;j++){
-                        tempMidPt=new LatLng(latitude+i*0.001,longitude+j*0.001);
-                        if (holesMidPt.contains(tempMidPt)==false) {
-                            holesMidPt.add(tempMidPt);
+                        tempMidString =Integer.toString(intLat+i) + "," + Integer.toString(intLong+j);
+                        if (intMidStringArray.contains(tempMidString)==false) {
+                            intMidStringArray.add(tempMidString);
                         }
                     }
                 }
             }
 
-            for (LatLng entry2 : holesMidPt) {
+            // for each mid point, draw the hole.
+            for (String entry : intMidStringArray) {
+                String[] latLngString = entry.split(",");
+                latitude = Float.parseFloat(latLngString[0])/1000;
+                longitude = Float.parseFloat(latLngString[1])/1000;
 
-                latitude = entry2.latitude;
-                longitude = entry2.longitude;
-
+                // Need a closed hole
                 hole = new ArrayList<LatLng>();
                 hole.add(new LatLng(latitude + 0.0005, longitude - 0.0005));
                 hole.add(new LatLng(latitude + 0.0005, longitude + 0.00049));
@@ -685,6 +691,7 @@ public class MapsActivity extends FragmentActivity {
             if (holes.size() >= 1) {
                 polygon.setHoles(holes);
             }
+
 
         } else {
             mMap.clear();
