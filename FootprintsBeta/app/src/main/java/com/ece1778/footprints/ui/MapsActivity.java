@@ -41,6 +41,7 @@ import com.ece1778.footprints.manager.MarkerScrollAdapter;
 import com.ece1778.footprints.manager.MotionDetectionLocationService;
 import com.ece1778.footprints.ui.camera.CameraActivity;
 import com.ece1778.footprints.ui.marker.AddMarkerActivity;
+import com.ece1778.footprints.ui.marker.ViewMarkerActivity;
 import com.ece1778.footprints.util.GeneralUtils;
 import com.ece1778.footprints.util.OrientationUtils;
 import com.ece1778.footprints.util.fullscreenUtil.SystemUiHider;
@@ -178,8 +179,6 @@ public class MapsActivity extends FragmentActivity {
                 return onAudioTouch(v,event);
             }
         });
-
-
     }
 
     @Override
@@ -300,14 +299,15 @@ public class MapsActivity extends FragmentActivity {
         mMap.setMyLocationEnabled(true);
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(curLoc, 13));
         mMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
-
             @Override
-            public void onMapLongClick(LatLng point){
-                long time= System.currentTimeMillis();
-                String timeString=GeneralUtils.timeMilliToString(time);
-                String location=point.latitude+","+point.longitude;
+            public void onMapLongClick(LatLng point) {
+                long time = System.currentTimeMillis();
+                String timeString = GeneralUtils.timeMilliToString(time);
+                String location = point.latitude + "," + point.longitude;
 
-                if (BuildConfig.DEBUG) { Log.d(TAG, "Add Marker " +location); }
+                if (BuildConfig.DEBUG) {
+                    Log.d(TAG, "Add Marker " + location);
+                }
 
                 Intent i = new Intent(MapsActivity.this, AddMarkerActivity.class);
                 i.putExtra(AddMarkerActivity.LOCATION_KEY, location);
@@ -316,6 +316,8 @@ public class MapsActivity extends FragmentActivity {
                 startActivity(i);
             }
         });
+
+
     }
 
     // On Location updated from the location manager, we need to add that to the database.
@@ -607,7 +609,10 @@ public class MapsActivity extends FragmentActivity {
 
     public void onInfoWindowClickDo(Marker marker) {
         if (marker.getTitle() != null) {
-
+            Intent i = new Intent(this, ViewMarkerActivity.class);
+            //i.putExtra(ViewMarkerActivity.LOCATION_KEY, GeneralUtils.locationToString(location));
+            //i.putExtra(ViewMarkerActivity.TIMESTAMP_KEY, timeString);
+            startActivity(i);
         }
         return;
     }

@@ -122,7 +122,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="2"
-                android:layout_margin="20dip"
+                android:layout_marginLeft="20dip"
                 android:text="Recommend Landmarks"
                 android:textColor="@color/body_text_color"
                 android:onClick="showRecommendations"/>
