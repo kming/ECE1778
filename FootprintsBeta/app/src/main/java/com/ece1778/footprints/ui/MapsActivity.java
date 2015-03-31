@@ -96,7 +96,7 @@ public class MapsActivity extends FragmentActivity {
         //restore preferences
 
         SharedPreferences settings = getSharedPreferences(LAST_SAVED_POINT, 0);
-        saveLastPointProcessed= settings.getInt("lastPoint",0);
+        saveLastPointProcessed= settings.getInt("lastPoint", 0);
 
         Button btn = (Button) findViewById(R.id.settings_btn);
         btn.setPressed(false);
@@ -299,6 +299,23 @@ public class MapsActivity extends FragmentActivity {
         mMap.setInfoWindowAdapter(new InfoWindowAdapter(getLayoutInflater()));
         mMap.setMyLocationEnabled(true);
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(curLoc, 13));
+        mMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
+
+            @Override
+            public void onMapLongClick(LatLng point){
+                long time= System.currentTimeMillis();
+                String timeString=GeneralUtils.timeMilliToString(time);
+                String location=point.latitude+","+point.longitude;
+
+                if (BuildConfig.DEBUG) { Log.d(TAG, "Add Marker " +location); }
+
+                Intent i = new Intent(MapsActivity.this, AddMarkerActivity.class);
+                i.putExtra(AddMarkerActivity.LOCATION_KEY, location);
+                i.putExtra(AddMarkerActivity.TIMESTAMP_KEY, timeString);
+
+                startActivity(i);
+            }
+        });
     }
 
     // On Location updated from the location manager, we need to add that to the database.
@@ -405,7 +422,7 @@ public class MapsActivity extends FragmentActivity {
                     for (MarkerTableEntry entry : entries) {
                         String location = entry.getLocation();
                         String titleString = entry.getTitle();
-                        String snippetString = entry.getNote()+ " .,.," + entry.getPicture()+" .,.,"+entry.getAudio();
+                        String snippetString = entry.getNote()+ ",.,." + entry.getPicture()+",.,."+entry.getAudio();
 
                         // TODO: Need to add and save the marker.  Otherwise no other way to add info to marker
                         mk = mMap.addMarker(new MarkerOptions()
