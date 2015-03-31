@@ -43,7 +43,7 @@ public class MotionDetectionLocationService extends Service {
     private static ArrayList<Float> mValues = new ArrayList<Float>();
     private static float mTotalValue = 0;
     private static final float NUMPOINTS = 4;
-    private static final float THRESHOLD = 2;
+    private static final float THRESHOLD = 1;
 
 
     // PRIVATE CLASS VARIABLES - Location callbacks as well.
@@ -61,10 +61,12 @@ public class MotionDetectionLocationService extends Service {
     private int mIntervalInitial = 10000;
     private static final int FAST_INTERVAL_DEFAULT = 5000;
     private static final int TWO_MINUTES = 1000 * 60 * 2;
+    private static final int ONE_MINUTE  = 1000 * 60 * 1;
 
     private ArrayList<Location> mLocations = null;
     private static final int NUM_LOCATIONS = 3;
-    private static final double SPEED_THRESHOLD = 0.5;
+    private static final double SPEED_MIN_THRESHOLD = 0.3;
+    private static final double SPEED_MAX_THRESHOLD = 1.5;
 
     /**
      * DEFAULT SERVICES FUNCTIONS - This is the functions necessary for the service to run.  It is
@@ -143,10 +145,7 @@ public class MotionDetectionLocationService extends Service {
                     // Stop Detection of Acceleration
                     resetListener();
                     // Start Location Detection
-                    if (!mFastDetect) {
-                        mFastDetect = true;
-                        setRefreshRate(mIntervalInitial, mFastIntervalInitial);
-                    }
+                    setRefreshRate(mIntervalInitial, mFastIntervalInitial);
                     onResume();
                 }
             }
@@ -303,12 +302,27 @@ public class MotionDetectionLocationService extends Service {
         boolean isSignificantlyOlder = timeDelta < -TWO_MINUTES;
         boolean isNewer = timeDelta > 0;
 
-        // If it's been more than two minutes since the current location, use the new location
-        // because the user has likely moved
+        // Calculate Speed of the new location
+        float speed = 0; // time is in ms.
+        if (location.hasSpeed()) {
+            speed = location.getSpeed();
+        } else {
+            float distance = location.distanceTo(currentBestLocation);
+            speed = distance/(timeDelta/1000); // time is in ms.
+        }
+        boolean speedIsGood = (speed >= SPEED_MIN_THRESHOLD) && (speed <= SPEED_MAX_THRESHOLD);
+        if (BuildConfig.DEBUG) { Log.d(TAG, Float.toString(speed)); }
+
+        // If it's been more than two minutes since the current location, and the rate of change is
+        // in walking speed, then we take it as new point
         if (isSignificantlyNewer) {
-            return true;
-            // If the new location is more than two minutes older, it must be worse
+                return true; // significantly newer, take point
+            // Speed is bad, but significantly newer, so check accuracy, if its better, use it
         } else if (isSignificantlyOlder) {
+            // if the point is significantly older, then it must be worse
+            return false;
+        } else if (!speedIsGood) {
+            // speed is not good, then just skip
             return false;
         }
 
@@ -323,14 +337,13 @@ public class MotionDetectionLocationService extends Service {
                 currentBestLocation.getProvider());
 
         // Determine location quality using a combination of timeliness and accuracy
-        if (isMoreAccurate) {
+        if (isMoreAccurate ) {
             return true;
         } else if (isNewer && !isLessAccurate) {
             return true;
         } else if (isNewer && !isSignificantlyLessAccurate && isFromSameProvider) {
             return true;
         }
-
         return false;
     }
 
@@ -347,41 +360,39 @@ public class MotionDetectionLocationService extends Service {
     /**
      * Determines whether one person is stopped based on the speed of the person
      */
-    protected boolean isStopped() {
-        // At least num locations are needed to see if we stopped.
-        if (mLocations.size() < NUM_LOCATIONS) {
+    protected boolean isStopped(Location location, Location currentBestLocation) {
+        // no Location --> Not Stopped
+        if (currentBestLocation == null) {
             return false;
         }
-        // After the initial measurements, switch to slow measurements
-        if (mFastDetect) {
-            mFastDetect = false;
-            setRefreshRate(mInterval, mFastInterval);
-        }
-        Location location1 = mLocations.get(0);
-        Location location2 = mLocations.get(NUM_LOCATIONS-1);
 
-        // Look at the speed of the current location
-        if (BuildConfig.DEBUG) { Log.d(TAG, "Speed: " + Float.toString(location2.getSpeed())); }
-        if (location2.hasSpeed()) {
-            if (location2.getSpeed() < SPEED_THRESHOLD) {
-                return true;
-            } else {
-                return false;
-            }
+        // Check whether the new location fix is newer or older
+        long timeDelta = location.getTime() - currentBestLocation.getTime();
+        boolean isOlder = timeDelta < 0;
+        boolean isNew = timeDelta < ONE_MINUTE; // if it is less than 30 seconds
+
+        if (isNew || isOlder) {
+            return false; // If the location is too new/older location, can't tell if it stopped.
         }
 
-        // Look at the timestamp and location differences and accuracy and determine if the location
-        // is stopped.
-        long dt = (location2.getTime() - location1.getTime())/1000; // time in seconds
-        float dx = location2.distanceTo(location1); // distance in meters
+        // Calculate Speed of the new location
+        float speed = 0; // time is in ms.
+        if (location.hasSpeed()) {
+            speed = location.getSpeed();
+        } else {
+            float distance = location.distanceTo(currentBestLocation);
+            speed = distance/(timeDelta/1000); // time is in ms.
+        }
 
-        float speed = dx/dt;
+        boolean speedIsGood = (speed >= SPEED_MIN_THRESHOLD) && (speed <= SPEED_MAX_THRESHOLD);
         if (BuildConfig.DEBUG) { Log.d(TAG, "Speed: " + Float.toString(speed)); }
-        if (speed < SPEED_THRESHOLD) {
+        if (speedIsGood) {
+            return false;
+        } else if (speed < SPEED_MIN_THRESHOLD){
             return true;
+        } else {
+            return false;
         }
-
-        return true;
     }
 
     /**
@@ -503,15 +514,9 @@ public class MotionDetectionLocationService extends Service {
                 // Listener exists, call it
                 this.mLocationChangedListener.onChanged(location);
             }
-            if (mLocations.size() < NUM_LOCATIONS) {
-                mLocations.add(location);
-            } else {
-                mLocations.add(location);
-                mLocations.remove(0);
-            }
         }
-        // See if we have "stopped" in the case that is is a good location.
-        if (isStopped()) {
+        // See if we have "stopped"
+        if (isStopped(location, mCurrentLocation)) {
             if (BuildConfig.DEBUG) { Log.d (TAG, "Stopped Moving"); }
             this.onPause();
             this.setListener();

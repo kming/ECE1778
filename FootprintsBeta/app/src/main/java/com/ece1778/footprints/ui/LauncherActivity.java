@@ -13,8 +13,20 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import com.ece1778.footprints.R;
+import com.ece1778.footprints.database.NeighbourhoodDBManager;
+import com.ece1778.footprints.database.NeighbourhoodTableEntry;
 import com.ece1778.footprints.util.OrientationUtils;
 import com.ece1778.footprints.util.fullscreenUtil.SystemUiHider;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.io.InputStream;
+
+import static com.ece1778.footprints.util.FileUtils.readJSON;
+import static com.ece1778.footprints.util.GeneralUtils.performOnBackgroundThread;
 
 
 /**
@@ -34,7 +46,7 @@ public class LauncherActivity extends Activity {
      * If {@link #AUTO_HIDE} is set, the number of milliseconds to wait after
      * user interaction before hiding the system UI.
      */
-    private static final int AUTO_HIDE_DELAY_MILLIS = 3000;
+    private static final int AUTO_HIDE_DELAY_MILLIS = 5000;
 
     /**
      * If set, will toggle the system UI visibility upon interaction. Otherwise,
@@ -63,6 +75,40 @@ public class LauncherActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Read in the one time loading the neighbourhoods.
+        Runnable jsonRunnable = new Runnable() {
+            @Override
+            public void run() {
+                //TODO: Uses the count to see if its updated.  Ideally, we want to see when its updated
+                if (NeighbourhoodDBManager.getManager(getApplicationContext()).getValuesCount() == 0) {
+                    // Read in a neighbourhood JSON file
+                    try {
+                        InputStream inputStream = getAssets().open("neighbourhoods.txt");
+                        try {
+                            JSONArray neighbourhoods = readJSON(inputStream).getJSONArray("features");
+                            for (int i = 0; i < neighbourhoods.length(); i++) {
+                                JSONObject neighbourhood = neighbourhoods.getJSONObject(i);
+                                String name = neighbourhood.getJSONObject("properties").getString("AREA_NAME");
+                                String coords = neighbourhood.getJSONObject("geometry").getString("coordinates");
+                                // Store the name and the coords and the status into a database.
+                                NeighbourhoodDBManager.getManager(getApplicationContext()).addValue(new NeighbourhoodTableEntry(
+                                        name,
+                                        coords,
+                                        NeighbourhoodTableEntry.SHOW
+                                ));
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+            }
+        };
+        performOnBackgroundThread(jsonRunnable);
 
         setContentView(R.layout.activity_launcher);
 
@@ -125,7 +171,6 @@ public class LauncherActivity extends Activity {
                 }
             }
         });
-
         checkGPS();
     }
 

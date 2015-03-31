@@ -294,6 +294,13 @@ public class AddMarkerActivity extends Activity {
                 mNote,
                 mTitle
         ));
+
+        if (BuildConfig.DEBUG) { Log.d(TAG, "Added picture: " + mPictureUri); }
+        if (BuildConfig.DEBUG) { Log.d(TAG, "Added audio: " + mAudioUri); }
+        if (BuildConfig.DEBUG) { Log.d(TAG, "Added location: " + mLocation); }
+        if (BuildConfig.DEBUG) { Log.d(TAG, "Added note: " + mNote); }
+        if (BuildConfig.DEBUG) { Log.d(TAG, "Added title: " + mTitle); }
+        if (BuildConfig.DEBUG) { Log.d(TAG, "Added timestamp: " + mTimestamp); }
     }
 
     public void saveMarker(View view){

@@ -33,6 +33,8 @@ import com.ece1778.footprints.database.LocTableEntry;
 import com.ece1778.footprints.database.LocationDBManager;
 import com.ece1778.footprints.database.MarkerDBManager;
 import com.ece1778.footprints.database.MarkerTableEntry;
+import com.ece1778.footprints.database.NeighbourhoodDBManager;
+import com.ece1778.footprints.database.NeighbourhoodTableEntry;
 import com.ece1778.footprints.manager.AudioRecordManager;
 import com.ece1778.footprints.manager.InfoWindowAdapter;
 import com.ece1778.footprints.manager.MarkerScrollAdapter;
@@ -54,12 +56,21 @@ import com.google.android.gms.maps.model.PolygonOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+
+import static com.ece1778.footprints.util.FileUtils.readJSON;
 
 public class MapsActivity extends FragmentActivity {
 
@@ -167,7 +178,6 @@ public class MapsActivity extends FragmentActivity {
                 return onAudioTouch(v,event);
             }
         });
-
 
 
     }
@@ -301,7 +311,7 @@ public class MapsActivity extends FragmentActivity {
 
         mMap.addMarker(new MarkerOptions()
                         .position(new LatLng(latitude, longitude))
-                        .title(timeString)
+                        //.title(timeString)
                         .icon(BitmapDescriptorFactory.fromResource(R.drawable.dot1))
                         .anchor(mid, mid)
         );
@@ -524,22 +534,7 @@ public class MapsActivity extends FragmentActivity {
     }
 
     private List<MarkerTableEntry> createList(int size) {
-
-        List<MarkerTableEntry> savedEntries = MarkerDBManager.getManager(this).getAllValues();
-        List<MarkerTableEntry> result = new ArrayList<MarkerTableEntry>();
-
-        for (MarkerTableEntry entry : savedEntries) {
-            MarkerTableEntry marker = new MarkerTableEntry();
-            marker.setTitle(entry.getTitle());
-            marker.setNote(entry.getNote());
-            marker.setPicture(entry.getPicture());
-            marker.setLocation(entry.getLocation());
-
-            result.add(marker);
-
-        }
-
-        return result;
+        return MarkerDBManager.getManager(this).getAllValues();
     }
 
     public void toggleTracking (View v) {

@@ -54,7 +54,7 @@ public class InfoWindowAdapter implements GoogleMap.InfoWindowAdapter {
             String audioURI=snippet[2];
 
             if (BuildConfig.DEBUG) {
-                Log.d(TAG, "getInfoWindow"+imageURI);
+                Log.d(TAG, "getInfoWindow "+ imageURI);
             }
 
             imageViewIcon = (ImageView)v.findViewById(R.id.balloon_item_image);

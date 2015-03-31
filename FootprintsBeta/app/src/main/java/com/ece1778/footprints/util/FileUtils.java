@@ -11,11 +11,18 @@ import android.util.Log;
 
 import com.ece1778.footprints.BuildConfig;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.channels.FileChannel;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -204,5 +211,28 @@ public class FileUtils {
         // Decode bitmap with inSampleSize set
         options.inJustDecodeBounds = false;
         return BitmapFactory.decodeStream(new FileInputStream(file), null, options);
+    }
+
+    public static JSONObject readJSON (InputStream inStream) {
+
+        String line = null;
+        try {
+            BufferedReader br = new BufferedReader(new InputStreamReader(inStream));
+            line = br.readLine();
+        }
+        catch (IOException e) {
+            //You'll need to add proper error handling here
+        }
+
+        JSONObject jsonObject = null;
+        try {
+            if (line != null) {
+                jsonObject = new JSONObject(line);
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        return jsonObject;
     }
 }
