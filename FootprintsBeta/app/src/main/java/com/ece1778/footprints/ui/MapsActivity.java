@@ -1109,12 +1109,9 @@ public class MapsActivity extends FragmentActivity {
 
             public void onClick(DialogInterface dialog, int id) {
                 dialog.dismiss();
-                Intent i = new Intent(Intent.ACTION_WEB_SEARCH);
-                if (link.isEmpty()) {
-                    i.putExtra(SearchManager.QUERY, name + " neighbourhood");
-                } else {
-                    i.putExtra(SearchManager.QUERY, link);
-                }
+                Intent i = new Intent(Intent.ACTION_VIEW);
+                i.setData(Uri.parse(link));
+
                 startActivity(i);
             } });
 
