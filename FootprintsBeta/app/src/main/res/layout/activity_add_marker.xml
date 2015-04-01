@@ -43,6 +43,20 @@
                     android:layout_height="200dip"
                     android:scaleType="centerCrop" />
 
+                <ToggleButton
+                    android:id="@+id/toggleSoundButtonPreview"
+                    android:layout_width="70dp"
+                    android:layout_height="70dp"
+                    android:adjustViewBounds="true"
+                    android:onClick="playAudioPreview"
+                    android:scaleType="fitCenter"
+                    android:textOn=""
+                    android:textOff=""
+                    android:background="@drawable/audio_playback_state_toggle"
+                    android:layout_marginRight="30dp"
+                    android:layout_alignParentTop="true"
+                    android:layout_alignParentRight="true"/>
+
             </RelativeLayout>
 
             <TextView

@@ -2,12 +2,16 @@ package com.ece1778.footprints.ui.marker;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
+import android.media.AudioManager;
 import android.media.ExifInterface;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -24,6 +28,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ToggleButton;
 
 import com.ece1778.footprints.BuildConfig;
 import com.ece1778.footprints.R;
@@ -92,6 +97,9 @@ public class AddMarkerActivity extends Activity {
 
     private static int RESULT_LOAD_IMAGE = 1;
 
+    private AudioManager am = null;
+    MediaPlayer mediaPlayer = null;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -118,6 +126,21 @@ public class AddMarkerActivity extends Activity {
             sound.setChecked(true);
         }
         populateElements();
+
+        ToggleButton audioPlaybackState=(ToggleButton)findViewById(R.id.toggleSoundButtonPreview);
+        if (BuildConfig.DEBUG) {
+            Log.d(TAG, "mAudioUri:"+ mAudioUri);
+        }
+        if (mAudioUri!=null) {
+            audioPlaybackState.setVisibility(View.VISIBLE);
+            audioPlaybackState.setChecked(false);
+            mediaPlayer = MediaPlayer.create(this, Uri.parse(mAudioUri));
+        }else{
+            audioPlaybackState.setVisibility(View.INVISIBLE);
+        }
+
+        this.setVolumeControlStream(AudioManager.STREAM_MUSIC);
+        am = (AudioManager) this.getSystemService(Context.AUDIO_SERVICE);
     }
 
     @Override
@@ -307,6 +330,14 @@ public class AddMarkerActivity extends Activity {
     }
 
     @Override
+    protected void onStop() {
+        super.onStop();
+        if(mediaPlayer!=null) {
+            stopMusic();
+        }
+    }
+
+    @Override
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
 
@@ -346,4 +377,73 @@ public class AddMarkerActivity extends Activity {
         return super.onOptionsItemSelected(item);
     }
 
+    public void playAudioPreview(View v){
+        boolean on = ((ToggleButton) v).isChecked();
+
+        if (on) {
+            playMusic();
+        } else {
+            mediaPlayer.pause();
+        }
+        return;
+    }
+
+    private void playMusic () {
+        int result = am.requestAudioFocus(afChangeListener,
+                // Use the music stream.
+                AudioManager.STREAM_MUSIC,
+                // Request permanent focus.
+                AudioManager.AUDIOFOCUS_GAIN);
+        final AlertDialog.Builder alertDialogBuilder;
+        if (am.getStreamVolume(AudioManager.STREAM_MUSIC) == 0) {
+
+            alertDialogBuilder = new AlertDialog.Builder(this);
+            // set dialog message
+            alertDialogBuilder.setMessage("Turn up volume for full experience").setCancelable(true);
+            alertDialogBuilder.setPositiveButton(android.R.string.ok,
+                    new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            // continue with delete
+                            dialog.dismiss();
+                        }
+                    });
+            // create alert dialog
+            AlertDialog alertDialog = alertDialogBuilder.create();
+
+            alertDialog.show();
+        }
+        if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+            startPlayback();
+        }
+    }
+
+    private void stopMusic () {
+        // Abandon audio focus when playback complete
+        am.abandonAudioFocus(afChangeListener);
+        stopPlayback();
+    }
+
+    private void startPlayback () {
+
+        mediaPlayer.setLooping(true);
+        mediaPlayer.start(); // no need to call prepare(); create() does that for you
+    }
+
+    private void stopPlayback () {
+        if (mediaPlayer.isPlaying()) {
+            mediaPlayer.stop();
+        }
+    }
+    AudioManager.OnAudioFocusChangeListener afChangeListener = new AudioManager.OnAudioFocusChangeListener() {
+        public void onAudioFocusChange(int focusChange) {
+            if (focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT){
+                stopPlayback();
+            } else if (focusChange == AudioManager.AUDIOFOCUS_GAIN) {
+                startPlayback();
+            } else if (focusChange == AudioManager.AUDIOFOCUS_LOSS) {
+                am.abandonAudioFocus(afChangeListener);
+                stopPlayback();
+            }
+        }
+    };
  }
