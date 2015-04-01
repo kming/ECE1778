@@ -114,7 +114,8 @@
                 android:layout_margin="2dip"
                 android:text="Fog"
                 android:textColor="@color/body_text_color"
-                android:onClick="generateFog"/>
+                android:onClick="generateFog"
+                android:checked="true"/>
 
             <CheckBox
                 android:id="@+id/view_recom_btn"
@@ -138,6 +139,18 @@
                 android:textColor="@color/body_text_color"
                 android:onClick="toggleTracking"
                 android:checked="true"/>
+
+            <CheckBox
+                android:id="@+id/toogle_hoods"
+                style="?metaButtonBarButtonStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:layout_margin="2dip"
+                android:text="Show Neighbourhoods"
+                android:textColor="@color/body_text_color"
+                android:onClick="toggleHoods"
+                android:checked="false"/>
 
         </LinearLayout>
     </FrameLayout>

@@ -2,6 +2,12 @@ package com.ece1778.footprints.ui;
 
 import android.annotation.TargetApi;
 import android.app.AlertDialog;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.app.ProgressDialog;
+import android.app.SearchManager;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -89,6 +95,12 @@ public class MapsActivity extends FragmentActivity {
     public static final String LAST_SAVED_POINT = "LastSavedPoint";
     public int saveLastPointProcessed;
 
+    private ArrayList<ArrayList<LatLng>> nhoodCoords = null;
+    private ArrayList<String> nhoodNames = new ArrayList<String>();
+    private ArrayList<String> nhoodStatus = new ArrayList<String>();
+    private ArrayList<String> nhoodLinks = new ArrayList<String>();
+
+    private static boolean mVisible = false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -118,6 +130,15 @@ public class MapsActivity extends FragmentActivity {
                     @Override
                     public void onChanged(Location location) {
                         onLocationChanged(location);
+                    }
+
+                    @Override
+                    public void onCrossBoundary(String name, String link) {
+                        if (mVisible) {
+                            promptInfoDialog(name, link);
+                        } else {
+                            promptNotification(name, link);
+                        }
                     }
                 });
         Intent intent = new Intent(this, MotionDetectionLocationService.class);
@@ -175,9 +196,12 @@ public class MapsActivity extends FragmentActivity {
         startAudio.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                return onAudioTouch(v,event);
+                return onAudioTouch(v, event);
             }
         });
+
+        // Draw fog
+        drawFog();
     }
 
     @Override
@@ -222,6 +246,7 @@ public class MapsActivity extends FragmentActivity {
     @Override
     protected void onPause() {
         super.onPause();
+        mVisible = false;
         mMap.setOnMarkerClickListener(null);
         mMap.setOnInfoWindowClickListener(null);
     }
@@ -250,6 +275,7 @@ public class MapsActivity extends FragmentActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        mVisible = true;
         mSystemUiHider.hide();
         setUpMapIfNeeded();
         if (mMap != null) {
@@ -297,6 +323,26 @@ public class MapsActivity extends FragmentActivity {
         mMap.setInfoWindowAdapter(new InfoWindowAdapter(getLayoutInflater()));
         mMap.setMyLocationEnabled(true);
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(curLoc, 13));
+        mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+            @Override
+            public void onMapClick(LatLng latLng) {
+                CheckBox toggleHoodCB = (CheckBox) findViewById(R.id.toogle_hoods);
+                if (toggleHoodCB.isChecked()) {
+
+                    int index = inWhichIndex(latLng.latitude, latLng.longitude, nhoodCoords);
+                    if (index < nhoodCoords.size()) {
+                        promptInfoDialog(nhoodNames.get(index), nhoodLinks.get(index));
+                        if (BuildConfig.DEBUG) {
+                            Log.d(TAG, "Neighbourhood Name: " + nhoodNames.get(index));
+                        }
+                    } else {
+                        if (BuildConfig.DEBUG) {
+                            Log.d(TAG, "Neighbourhood Not Found");
+                        }
+                    }
+                }
+            }
+        });
         mMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
             @Override
             public void onMapLongClick(LatLng point) {
@@ -329,7 +375,7 @@ public class MapsActivity extends FragmentActivity {
 
         mMap.addMarker(new MarkerOptions()
                         .position(new LatLng(latitude, longitude))
-                        //.title(timeString)
+                                //.title(timeString)
                         .icon(BitmapDescriptorFactory.fromResource(R.drawable.dot1))
                         .anchor(mid, mid)
         );
@@ -338,6 +384,7 @@ public class MapsActivity extends FragmentActivity {
                 GeneralUtils.locationToString(location),
                 ""
         ));
+        generateFog((CheckBox)findViewById(R.id.fog_btn));
     }
 
     private void populateLocations() {
@@ -582,7 +629,7 @@ public class MapsActivity extends FragmentActivity {
     }
 
     public void toggleTracking (View v) {
-        CheckBox trackOnOff = (CheckBox) findViewById(R.id.toggle_tracking);
+        CheckBox trackOnOff = (CheckBox) v;
         if (trackOnOff.isChecked()) {
             // Turn on Tracking
             Intent intent = new Intent(this, MotionDetectionLocationService.class);
@@ -592,6 +639,109 @@ public class MapsActivity extends FragmentActivity {
             Intent intent = new Intent(this, MotionDetectionLocationService.class);
             stopService(intent);
         }
+    }
+
+    public void toggleHoods (View v) {
+        CheckBox hoodsOff = (CheckBox) v;
+        if (hoodsOff.isChecked()) {
+            drawHoods();
+        } else {
+            // Turn off Boundaries
+            mMap.clear();
+            if (((CheckBox)findViewById(R.id.fog_btn)).isChecked()) {
+                drawFog();
+            }
+            populateLocationsFiltered();
+            populateMarker();
+        }
+    }
+
+    private void drawHoods () {
+        // Turn on Boundaries
+        final Context context = this;
+        new AsyncTask<Void, ArrayList<LatLng>, Void>() {
+
+            private ProgressDialog pdia;
+
+            @Override
+            protected void onPreExecute(){
+                pdia = new ProgressDialog(context);
+                pdia.setMessage("Updating Map...");
+                pdia.show();
+            }
+
+            @Override
+            protected Void doInBackground(Void... params) {
+                ArrayList<NeighbourhoodTableEntry> entries =
+                        NeighbourhoodDBManager.getManager(getApplicationContext()).getAllValues();
+
+                if (nhoodCoords != null && (nhoodCoords.size() == entries.size())) {
+                    for (ArrayList<LatLng> region : nhoodCoords) {
+                        publishProgress(region);
+                    }
+                    return null;
+                } else {
+                    if (nhoodCoords != null) {
+                        nhoodCoords.clear();
+                        nhoodStatus.clear();
+                        nhoodNames.clear();
+                        nhoodLinks.clear();
+                    }
+                }
+
+                ArrayList<ArrayList<LatLng>> nhoods = new ArrayList<ArrayList<LatLng>>();
+                for (NeighbourhoodTableEntry entry : entries) {
+                    String name = entry.getName();
+                    String coordString = entry.getCoords();
+                    String status = entry.getStatus();
+                    String link = entry.getLink();
+
+                    // split coord
+                    String[] coordSubStrings = coordString.split("\\],\\[");
+                    coordSubStrings[0] = coordSubStrings[0].replaceAll("\\[", "");
+                    coordSubStrings[coordSubStrings.length-1] =
+                            coordSubStrings[coordSubStrings.length-1].replaceAll("\\]", "");
+                    ArrayList<LatLng> coords = new ArrayList<LatLng>();
+                    for (String coordSubString : coordSubStrings) {
+                        String[] coordStrings = coordSubString.split(",");
+                        double longitude = Double.parseDouble(coordStrings[0]);
+                        double latitude = Double.parseDouble(coordStrings[1]);
+
+                        coords.add(new LatLng(latitude, longitude));
+                    }
+                    publishProgress(coords);
+                    nhoods.add(coords);
+                    nhoodNames.add(name);
+                    nhoodStatus.add(status);
+                    nhoodLinks.add(link);
+                }
+
+                nhoodCoords = nhoods;
+                return null;
+            }
+
+            @Override
+            protected void onProgressUpdate (ArrayList<LatLng>... region) {
+                mMap.addPolygon(
+                        new PolygonOptions()
+                                .strokeColor(Color.RED)
+                                .addAll(region[0])
+                                .zIndex(2)
+                );
+            }
+
+            @Override
+            protected void onPostExecute(Void v) {
+                pdia.dismiss();
+                Toast.makeText(
+                    getApplicationContext(),
+                    "Click on neighbourhood to learn more",
+                    Toast.LENGTH_SHORT
+                ).show();
+                return;
+            }
+
+        }.execute();
     }
     public void showRecommendations(View v) {
 
@@ -651,90 +801,94 @@ public class MapsActivity extends FragmentActivity {
 
     public void generateFog(View v) {
         CheckBox fogOnOff = (CheckBox) findViewById(R.id.fog_btn);
-        float delta = 0.1f;
 
         if (fogOnOff.isChecked()) {
-            // Populate Fog -  If holes overlap --> Causes Fog to not draw
-            Polygon polygon = mMap.addPolygon(new PolygonOptions()
-                    .add(new LatLng(90, -180),
-                            new LatLng(-90 + delta, -180 + delta),
-                            new LatLng(-90 + delta, 0),
-                            new LatLng(-90 + delta, 180 - delta),
-                            new LatLng(0, 180 - delta),
-                            new LatLng(90 - delta, 180 - delta),
-                            new LatLng(90 - delta, 0),
-                            new LatLng(90 - delta, -180 + delta),
-                            new LatLng(0, -180 + delta))
-                            //.strokeWidth(0)
-                    .strokeColor(Color.TRANSPARENT)
-                    .fillColor(Color.argb(200, 255, 255, 255)));
-
-            ArrayList<LocTableEntry> entries = LocationDBManager.getManager(this).getAllValues();
-            ArrayList<ArrayList<LatLng>> holes = new ArrayList<ArrayList<LatLng>>();
-            ArrayList<String> intMidStringArray = new ArrayList<>();
-            ArrayList<LatLng> hole;
-
-           String tempMidString;
-            double latitude;
-            double longitude;
-
-            // From the locations, determine which grid it belongs in.
-            for (LocTableEntry entry : entries) {
-                String location = entry.getLocation();
-                String[] locationParts = location.split(",");
-                latitude = Double.parseDouble(locationParts[0]) * 1000;
-                longitude = Double.parseDouble(locationParts[1]) * 1000;
-                latitude = Math.round(latitude);
-                longitude = Math.round(longitude);
-
-                // grid spacing of 1000th of a degree.
-                int intLat = (int) latitude;
-                int intLong = (int) longitude;
-
-                // Store it as an integer string to prevent any floating point issues
-                for(int i=-2;i<=2;i++){
-                    int a= (2-Math.abs(i))*2;
-
-                    for(int j=-a;j<a+1;j++){
-                        tempMidString =Integer.toString(intLat+i) + "," + Integer.toString(intLong+j);
-                        if (intMidStringArray.contains(tempMidString)==false) {
-                            intMidStringArray.add(tempMidString);
-                        }
-                    }
-                }
-            }
-
-            // for each mid point, draw the hole.
-            for (String entry : intMidStringArray) {
-                String[] latLngString = entry.split(",");
-                latitude = Float.parseFloat(latLngString[0])/1000;
-                longitude = Float.parseFloat(latLngString[1])/1000;
-
-                // Need a closed hole
-                hole = new ArrayList<LatLng>();
-                hole.add(new LatLng(latitude + 0.0005, longitude - 0.0005));
-                hole.add(new LatLng(latitude + 0.0005, longitude + 0.00049));
-                hole.add(new LatLng(latitude - 0.00049, longitude + 0.00049));
-                hole.add(new LatLng(latitude - 0.00049, longitude - 0.0005));
-                hole.add(new LatLng(latitude + 0.0005, longitude - 0.0005));
-
-                holes.add(hole);
-            }
-
-            if (holes.size() >= 1) {
-                polygon.setHoles(holes);
-            }
-
-
+            drawFog();
         } else {
             mMap.clear();
-            //populateLocations();
+            if (((CheckBox)findViewById(R.id.toogle_hoods)).isChecked()) {
+                drawHoods();
+            }
             populateLocationsFiltered();
             populateMarker();
         }
 
     }
 
+    private void drawFog () {
+        float delta = 0.1f;
+        // Populate Fog -  If holes overlap --> Causes Fog to not draw
+        Polygon polygon = mMap.addPolygon(new PolygonOptions()
+                .add(new LatLng(90, -180),
+                        new LatLng(-90 + delta, -180 + delta),
+                        new LatLng(-90 + delta, 0),
+                        new LatLng(-90 + delta, 180 - delta),
+                        new LatLng(0, 180 - delta),
+                        new LatLng(90 - delta, 180 - delta),
+                        new LatLng(90 - delta, 0),
+                        new LatLng(90 - delta, -180 + delta),
+                        new LatLng(0, -180 + delta))
+                        //.strokeWidth(0)
+                .strokeColor(Color.TRANSPARENT)
+                .fillColor(Color.argb(200, 255, 255, 255))
+                .zIndex(1));
+
+        ArrayList<LocTableEntry> entries = LocationDBManager.getManager(this).getAllValues();
+        ArrayList<ArrayList<LatLng>> holes = new ArrayList<ArrayList<LatLng>>();
+        ArrayList<String> intMidStringArray = new ArrayList<>();
+        ArrayList<LatLng> hole;
+
+        String tempMidString;
+        double latitude;
+        double longitude;
+
+        // From the locations, determine which grid it belongs in.
+        for (LocTableEntry entry : entries) {
+            String location = entry.getLocation();
+            String[] locationParts = location.split(",");
+            latitude = Double.parseDouble(locationParts[0]) * 1000;
+            longitude = Double.parseDouble(locationParts[1]) * 1000;
+            latitude = Math.round(latitude);
+            longitude = Math.round(longitude);
+
+            // grid spacing of 1000th of a degree.
+            int intLat = (int) latitude;
+            int intLong = (int) longitude;
+
+            // Store it as an integer string to prevent any floating point issues
+            for(int i=-2;i<=2;i++){
+                int a= (2-Math.abs(i))*2;
+
+                for(int j=-a;j<a+1;j++){
+                    tempMidString =Integer.toString(intLat+i) + "," + Integer.toString(intLong+j);
+                    if (intMidStringArray.contains(tempMidString)==false) {
+                        intMidStringArray.add(tempMidString);
+                    }
+                }
+            }
+        }
+
+        // for each mid point, draw the hole.
+        for (String entry : intMidStringArray) {
+            String[] latLngString = entry.split(",");
+            latitude = Float.parseFloat(latLngString[0])/1000;
+            longitude = Float.parseFloat(latLngString[1])/1000;
+
+            // Need a closed hole
+            hole = new ArrayList<LatLng>();
+            hole.add(new LatLng(latitude + 0.0005, longitude - 0.0005));
+            hole.add(new LatLng(latitude + 0.0005, longitude + 0.00049));
+            hole.add(new LatLng(latitude - 0.00049, longitude + 0.00049));
+            hole.add(new LatLng(latitude - 0.00049, longitude - 0.0005));
+            hole.add(new LatLng(latitude + 0.0005, longitude - 0.0005));
+
+            holes.add(hole);
+        }
+
+        if (holes.size() >= 1) {
+            polygon.setHoles(holes);
+        }
+    }
     private void onMarkerAdapterClicked(LatLng coordinates) {
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(coordinates, 13));
 
@@ -911,4 +1065,96 @@ public class MapsActivity extends FragmentActivity {
         return;
     }
 
+    // Returns an index outside of the array size if cannot find one.
+    private int inWhichIndex (double latitude, double longitude, ArrayList<ArrayList<LatLng>> regions) {
+        int index = 0;
+        for (ArrayList<LatLng> region : regions) {
+            if (containsPoint(latitude, longitude, region)) {
+                return index;
+            }
+            index++;
+        }
+        return index;
+    }
+    private boolean containsPoint (double latitude, double longitude, ArrayList<LatLng> region) {
+        int i, j;
+        boolean c = false;
+        int size = region.size();
+        for (i=0,j=size-1; i<size; j = i++ ) {
+            LatLng itemp = region.get(i);
+            double iLat = itemp.latitude;
+            double iLong = itemp.longitude;
+            LatLng jtemp = region.get(j);
+            double jLat = jtemp.latitude;
+            double jLong = jtemp.longitude;
+            if ( ((iLat>latitude) != (jLat>latitude)) &&
+                    (longitude < (jLong-iLong) * (latitude-iLat) / (jLat-iLat) + iLong) )
+                c = !c;
+        }
+
+        // Ray Casting Point in Polygon Algorithm
+
+        return c;
+
+    }
+
+    private void promptInfoDialog (final String name, final String link) {
+        AlertDialog alertDialog = new AlertDialog.Builder(this).create();
+
+        alertDialog.setTitle("This is " + name + " Neighbourhood");
+
+        alertDialog.setMessage("Would you like to know more?");
+
+        alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "Additional Info", new DialogInterface.OnClickListener() {
+
+            public void onClick(DialogInterface dialog, int id) {
+                dialog.dismiss();
+                Intent i = new Intent(Intent.ACTION_WEB_SEARCH);
+                if (link.isEmpty()) {
+                    i.putExtra(SearchManager.QUERY, name + " neighbourhood");
+                } else {
+                    i.putExtra(SearchManager.QUERY, link);
+                }
+                startActivity(i);
+            } });
+
+        alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "Cancel", new DialogInterface.OnClickListener() {
+
+            public void onClick(DialogInterface dialog, int id) {
+
+                dialog.dismiss();
+
+            }});
+
+        alertDialog.show();
+    }
+    private void promptNotification (final String name, final String link) {
+        Intent appIntent = new Intent(this, MapsActivity.class);
+        PendingIntent pIntent = PendingIntent.getActivity(this, 0, appIntent, 0);
+
+        Intent searchIntent = new Intent(Intent.ACTION_WEB_SEARCH);
+        if (link.isEmpty()) {
+            searchIntent.putExtra(SearchManager.QUERY, name + " neighbourhood");
+        } else {
+            searchIntent.putExtra(SearchManager.QUERY, link);
+        }
+        PendingIntent pSearchIntent = PendingIntent.getActivity(this, 0, searchIntent, 0);
+
+        // build notification
+        // the addAction re-use the same intent to keep the example short
+        Notification n  = new Notification.Builder(this)
+                .setContentTitle("You have Entered: " + name + " Neighbourhood")
+                .setContentText("Explore around!")
+                .setSmallIcon(R.drawable.ic_launcher)
+                .setContentIntent(pIntent)
+                .setAutoCancel(true)
+                .addAction(R.drawable.search, "Search", pSearchIntent)
+                .addAction(R.drawable.open, "open", pIntent).build();
+
+
+        NotificationManager notificationManager =
+                (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+
+        notificationManager.notify(0, n);
+    }
 }

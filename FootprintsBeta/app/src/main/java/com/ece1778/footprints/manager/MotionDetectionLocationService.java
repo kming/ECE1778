@@ -15,12 +15,15 @@ import android.os.IBinder;
 import android.util.Log;
 
 import com.ece1778.footprints.BuildConfig;
+import com.ece1778.footprints.database.NeighbourhoodDBManager;
+import com.ece1778.footprints.database.NeighbourhoodTableEntry;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
 
@@ -68,6 +71,12 @@ public class MotionDetectionLocationService extends Service {
     private static final double SPEED_MIN_THRESHOLD = 0.3;
     private static final double SPEED_MAX_THRESHOLD = 50;
 
+    private static ArrayList<ArrayList<LatLng>> nhoodCoords = new ArrayList<>();
+    private static ArrayList<String> nhoodNames = new ArrayList<>();
+    private static ArrayList<String> nhoodStatus = new ArrayList<>();
+    private static ArrayList<String> nhoodLinks = new ArrayList<>();
+    private static int mPrevIndex = 0;
+
     /**
      * DEFAULT SERVICES FUNCTIONS - This is the functions necessary for the service to run.  It is
      * what is called continuously.
@@ -80,6 +89,7 @@ public class MotionDetectionLocationService extends Service {
         super.onCreate();
         if (BuildConfig.DEBUG) { Log.d (TAG, "onCreated"); }
         initMotionDetection();
+        initNeighbourhoods();
         initManager(this);
         return;
     }
@@ -321,9 +331,6 @@ public class MotionDetectionLocationService extends Service {
         } else if (isSignificantlyOlder) {
             // if the point is significantly older, then it must be worse
             return false;
-        } else if (!speedIsGood) {
-            // speed is not good, then just skip
-            return false;
         }
 
         // Check whether the new location fix is more or less accurate
@@ -393,6 +400,49 @@ public class MotionDetectionLocationService extends Service {
         } else {
             return false;
         }
+    }
+    private void initNeighbourhoods () {
+        ArrayList<NeighbourhoodTableEntry> entries =
+                NeighbourhoodDBManager.getManager(getApplicationContext()).getAllValues();
+
+        if (nhoodCoords != null && (nhoodCoords.size() == entries.size())) {
+            return;
+        } else {
+            if (nhoodCoords != null) {
+                nhoodCoords.clear();
+                nhoodStatus.clear();
+                nhoodNames.clear();
+                nhoodLinks.clear();
+            }
+        }
+
+        ArrayList<ArrayList<LatLng>> nhoods = new ArrayList<ArrayList<LatLng>>();
+        for (NeighbourhoodTableEntry entry : entries) {
+            String name = entry.getName();
+            String coordString = entry.getCoords();
+            String status = entry.getStatus();
+            String link = entry.getLink();
+
+            // split coord
+            String[] coordSubStrings = coordString.split("\\],\\[");
+            coordSubStrings[0] = coordSubStrings[0].replaceAll("\\[", "");
+            coordSubStrings[coordSubStrings.length-1] =
+                    coordSubStrings[coordSubStrings.length-1].replaceAll("\\]", "");
+            ArrayList<LatLng> coords = new ArrayList<LatLng>();
+            for (String coordSubString : coordSubStrings) {
+                String[] coordStrings = coordSubString.split(",");
+                double longitude = Double.parseDouble(coordStrings[0]);
+                double latitude = Double.parseDouble(coordStrings[1]);
+
+                coords.add(new LatLng(latitude, longitude));
+            }
+            nhoods.add(coords);
+            nhoodNames.add(name);
+            nhoodStatus.add(status);
+            nhoodLinks.add(link);
+        }
+
+        nhoodCoords = nhoods;
     }
 
     /**
@@ -510,22 +560,62 @@ public class MotionDetectionLocationService extends Service {
             if (BuildConfig.DEBUG) { Log.d (TAG, "Found Better Location"); }
             mPreviousLocation = mCurrentLocation;
             mCurrentLocation = location;
+            int index = inWhichIndex(location.getLatitude(), location.getLongitude(), nhoodCoords);
             if (this.mLocationChangedListener != null) {
                 // Listener exists, call it
                 this.mLocationChangedListener.onChanged(location);
+                // if the prev location is unknown just assume boundary is crossed.
+                if (mPreviousLocation == null || index != mPrevIndex) {
+                    this.mLocationChangedListener.onCrossBoundary(
+                            nhoodNames.get(index),
+                            nhoodLinks.get(index)
+                    );
+                    mPrevIndex = index;
+                }
             }
         }
         // See if we have "stopped"
         if (isStopped(location, mCurrentLocation)) {
             if (BuildConfig.DEBUG) { Log.d (TAG, "Stopped Moving"); }
-            //this.onPause();
-            //this.setListener();
+            this.onPause();
+            this.setListener();
         } else {
             if (BuildConfig.DEBUG) { Log.d (TAG, "Moving"); }
         }
 
     }
+    // Returns an index outside of the array size if cannot find one.
+    private int inWhichIndex (double latitude, double longitude, ArrayList<ArrayList<LatLng>> regions) {
+        int index = 0;
+        for (ArrayList<LatLng> region : regions) {
+            if (containsPoint(latitude, longitude, region)) {
+                return index;
+            }
+            index++;
+        }
+        return index;
+    }
+    private boolean containsPoint (double latitude, double longitude, ArrayList<LatLng> region) {
+        int i, j;
+        boolean c = false;
+        int size = region.size();
+        for (i=0,j=size-1; i<size; j = i++ ) {
+            LatLng itemp = region.get(i);
+            double iLat = itemp.latitude;
+            double iLong = itemp.longitude;
+            LatLng jtemp = region.get(j);
+            double jLat = jtemp.latitude;
+            double jLong = jtemp.longitude;
+            if ( ((iLat>latitude) != (jLat>latitude)) &&
+                    (longitude < (jLong-iLong) * (latitude-iLat) / (jLat-iLat) + iLong) )
+                c = !c;
+        }
 
+        // Ray Casting Point in Polygon Algorithm
+
+        return c;
+
+    }
     /**
      * LocationChanged Listeners
      */
@@ -535,5 +625,6 @@ public class MotionDetectionLocationService extends Service {
 
     public interface LocationChangedListener {
         void onChanged(Location location);
+        void onCrossBoundary (String name, String link);
     }
 }

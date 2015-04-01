@@ -2,11 +2,16 @@ package com.ece1778.footprints.ui;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.location.LocationManager;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v4.util.ArrayMap;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
@@ -24,8 +29,10 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
 
 import static com.ece1778.footprints.util.FileUtils.readJSON;
+import static com.ece1778.footprints.util.FileUtils.readLinks;
 import static com.ece1778.footprints.util.GeneralUtils.performOnBackgroundThread;
 
 
@@ -75,15 +82,31 @@ public class LauncherActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        final Context context = this;
+        // Read in the one time loading the neighbourhoods and creeks
+        new AsyncTask<Void, Void, Void>() {
+            private ProgressDialog pdia;
 
-        // Read in the one time loading the neighbourhoods.
-        Runnable jsonRunnable = new Runnable() {
             @Override
-            public void run() {
+            protected void onPreExecute(){
+                pdia = new ProgressDialog(context);
+                pdia.setMessage("Loading...");
+                pdia.show();
+            }
+
+            @Override
+            protected Void doInBackground(Void... params) {
                 //TODO: Uses the count to see if its updated.  Ideally, we want to see when its updated
                 if (NeighbourhoodDBManager.getManager(getApplicationContext()).getValuesCount() == 0) {
                     // Read in a neighbourhood JSON file
                     try {
+                        InputStream inputStreamLink = getAssets().open("neighbourhoods_link.csv");
+                        ArrayMap<String, String> links = new ArrayMap<String, String>();
+                        for (String line : readLinks(inputStreamLink)) {
+                            String[] subString = line.split(",");
+                            links.put(subString[0], subString[1]);
+                        }
+                        inputStreamLink.close();
                         InputStream inputStream = getAssets().open("neighbourhoods.txt");
                         try {
                             JSONArray neighbourhoods = readJSON(inputStream).getJSONArray("features");
@@ -95,7 +118,8 @@ public class LauncherActivity extends Activity {
                                 NeighbourhoodDBManager.getManager(getApplicationContext()).addValue(new NeighbourhoodTableEntry(
                                         name,
                                         coords,
-                                        NeighbourhoodTableEntry.SHOW
+                                        NeighbourhoodTableEntry.SHOW,
+                                        links.get(name)
                                 ));
                             }
                         } catch (JSONException e) {
@@ -105,10 +129,17 @@ public class LauncherActivity extends Activity {
                         e.printStackTrace();
                     }
                 }
-
+                return null;
             }
-        };
-        performOnBackgroundThread(jsonRunnable);
+
+            @Override
+            protected void onPostExecute(Void v) {
+                pdia.dismiss();
+                return;
+            }
+        }.execute();
+
+
 
         setContentView(R.layout.activity_launcher);
 

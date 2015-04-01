@@ -25,6 +25,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.channels.FileChannel;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 
 /**
@@ -234,5 +235,22 @@ public class FileUtils {
         }
 
         return jsonObject;
+    }
+
+    public static ArrayList<String> readLinks (InputStream inStream) {
+
+        ArrayList<String> lines = new ArrayList<>();
+        String line;
+        try {
+            BufferedReader br = new BufferedReader(new InputStreamReader(inStream));
+            while ((line = br.readLine()) != null){
+                lines.add(line);
+            }
+        }
+        catch (IOException e) {
+            //You'll need to add proper error handling here
+        }
+
+        return lines;
     }
 }

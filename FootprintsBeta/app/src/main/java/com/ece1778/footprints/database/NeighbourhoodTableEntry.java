@@ -12,6 +12,7 @@ public class NeighbourhoodTableEntry {
     private String mName;
     private String mCoords;
     private String mStatus;
+    private String mLink;
 
     // empty constructor
     public NeighbourhoodTableEntry() {
@@ -20,18 +21,20 @@ public class NeighbourhoodTableEntry {
 
     // partial constructor for adding to database w/o ID
     // Assumes it is stored as a string for the uri
-    public NeighbourhoodTableEntry(String name, String coords, String status) {
+    public NeighbourhoodTableEntry(String name, String coords, String status, String link) {
         this.mName = name;
         this.mCoords = coords;
         this.mStatus = status;
+        this.mLink = link;
     }
 
     // full constructor for reading from database with ID
-    public NeighbourhoodTableEntry(long id, String name, String coords, String status) {
+    public NeighbourhoodTableEntry(long id, String name, String coords, String status, String link) {
         this.id = id;
         this.mName = name;
         this.mCoords = coords;
         this.mStatus = status;
+        this.mLink = link;
     }
 
     public long getID() {
@@ -65,6 +68,14 @@ public class NeighbourhoodTableEntry {
 
     public void setStatus(String value) {
         this.mStatus = value;
+    }
+
+    public String getLink() {
+        return this.mLink;
+    }
+
+    public void setLink(String value) {
+        this.mLink = value;
     }
 
 }

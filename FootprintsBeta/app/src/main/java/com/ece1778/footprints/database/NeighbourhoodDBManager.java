@@ -25,6 +25,7 @@ public class NeighbourhoodDBManager extends SQLiteOpenHelper {
     public static final String COLUMN_NAME = "name";
     public static final String COLUMN_COORDS = "coords";
     public static final String COLUMN_STATUS = "status";
+    public static final String COLUMN_LINK = "link";
 
     // Database creation sql statement
     private static final String DATABASE_CREATE = "CREATE TABLE "
@@ -33,7 +34,8 @@ public class NeighbourhoodDBManager extends SQLiteOpenHelper {
             + COLUMN_ID     + " integer primary key autoincrement,"
             + COLUMN_NAME   + " text not null,"
             + COLUMN_COORDS + " text not null,"
-            + COLUMN_STATUS + " text not null"
+            + COLUMN_STATUS + " text not null,"
+            + COLUMN_LINK   + " text"
             + ");";
 
     // Define Database Parameters
@@ -158,14 +160,12 @@ public class NeighbourhoodDBManager extends SQLiteOpenHelper {
         values.put(COLUMN_NAME, entry.getName());
         values.put(COLUMN_COORDS, entry.getCoords());
         values.put(COLUMN_STATUS, entry.getStatus());
+        values.put(COLUMN_LINK, entry.getLink());
 
         // Inserting into database
         db.insert(TABLE_ENTRIES, null, values);
         db.close();
 
-        if (BuildConfig.DEBUG) {
-            Log.d(TAG, "Add Value" + entry.getName());
-        }
     }
 
     // Getting single value
@@ -178,7 +178,8 @@ public class NeighbourhoodDBManager extends SQLiteOpenHelper {
                 COLUMN_ID,
                 COLUMN_NAME,
                 COLUMN_COORDS,
-                COLUMN_STATUS
+                COLUMN_STATUS,
+                COLUMN_LINK
         }
                 , COLUMN_ID + "=?", new String[]{
                 String.valueOf(id)
@@ -191,7 +192,8 @@ public class NeighbourhoodDBManager extends SQLiteOpenHelper {
                     Long.parseLong(cursor.getString(0)),    // ID
                     cursor.getString(1),                    // Name
                     cursor.getString(2),                    // Coords
-                    cursor.getString(3)                     // Status
+                    cursor.getString(3),                    // Status
+                    cursor.getString(4)                     // link
             );
         }
         db.close();
@@ -210,7 +212,8 @@ public class NeighbourhoodDBManager extends SQLiteOpenHelper {
                 COLUMN_ID,
                 COLUMN_NAME,
                 COLUMN_COORDS,
-                COLUMN_STATUS
+                COLUMN_STATUS,
+                COLUMN_LINK
         }
                 , COLUMN_NAME + "=?", new String[]{
                 name
@@ -239,7 +242,8 @@ public class NeighbourhoodDBManager extends SQLiteOpenHelper {
                 COLUMN_ID,
                 COLUMN_NAME,
                 COLUMN_COORDS,
-                COLUMN_STATUS
+                COLUMN_STATUS,
+                COLUMN_LINK
         }
                 , null, null, null, null, null, null);
 
@@ -250,7 +254,8 @@ public class NeighbourhoodDBManager extends SQLiteOpenHelper {
                         Long.parseLong(cursor.getString(0)),    // ID
                         cursor.getString(1),                    // Name
                         cursor.getString(2),                    // Coords
-                        cursor.getString(3)                     // Status
+                        cursor.getString(3),                    // Status
+                        cursor.getString(4)                     // link
                 );
                 // Adding contact to list
                 entryList.add(tableEntry);
@@ -289,6 +294,7 @@ public class NeighbourhoodDBManager extends SQLiteOpenHelper {
         values.put(COLUMN_NAME, entry.getName());
         values.put(COLUMN_COORDS, entry.getCoords());
         values.put(COLUMN_STATUS, entry.getStatus());
+        values.put(COLUMN_LINK, entry.getLink());
 
         // updating row
         int result = db.update(TABLE_ENTRIES, values, COLUMN_ID + " = ?",
