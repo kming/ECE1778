@@ -26,11 +26,12 @@
             android:id="@+id/landmark_image"
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
-            android:scaleType="centerCrop"/>
+            android:scaleType="centerInside"/>
 
         <TextView
             android:id="@+id/landmark_description"
             android:textColor="@color/body_text_color"
+            android:background="@color/white_overlay"
             android:textSize="14dp"
             android:text=""
             android:paddingLeft="20dp"

@@ -19,6 +19,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.MenuItem;
 import android.support.v4.app.NavUtils;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -101,73 +102,27 @@ public class AddMarkerActivity extends Activity {
         final View controlsView = findViewById(R.id.fullscreen_content_controls);
         final View contentView = findViewById(R.id.fullscreen_content);
 
-        // Set up an instance of SystemUiHider to control the system UI for
-        // this activity.
-/*        mSystemUiHider = SystemUiHider.getInstance(this, contentView, HIDER_FLAGS);
-        mSystemUiHider.setup();
-        mSystemUiHider
-                .setOnVisibilityChangeListener(new SystemUiHider.OnVisibilityChangeListener() {
-                    // Cached values.
-                    int mControlsHeight;
-                    int mShortAnimTime;
+        Intent i = getIntent();
+        mPictureUri = i.getStringExtra(PIC_URI_KEY);
+        mAudioUri   = i.getStringExtra(AUDIO_URI_KEY);
+        mLocation = i.getStringExtra(LOCATION_KEY);
+        mTimestamp = i.getStringExtra(TIMESTAMP_KEY);
 
-                    @Override
-                    @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
-                    public void onVisibilityChange(boolean visible) {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
-                            // If the ViewPropertyAnimator API is available
-                            // (Honeycomb MR2 and later), use it to animate the
-                            // in-layout UI controls at the bottom of the
-                            // screen.
-                            if (mControlsHeight == 0) {
-                                mControlsHeight = controlsView.getHeight();
-                            }
-                            if (mShortAnimTime == 0) {
-                                mShortAnimTime = getResources().getInteger(
-                                        android.R.integer.config_shortAnimTime);
-                            }
-                            controlsView.animate()
-                                    .translationY(visible ? 0 : mControlsHeight)
-                                    .setDuration(mShortAnimTime);
-                        } else {
-                            // If the ViewPropertyAnimator APIs aren't
-                            // available, simply show or hide the in-layout UI
-                            // controls.
-                            controlsView.setVisibility(visible ? View.VISIBLE : View.GONE);
-                        }
+        if(mPictureUri!=null){
+            CheckBox sight=(CheckBox)findViewById(R.id.checkbox_sight);
+            sight.setChecked(true);
+        }
 
-                        if (visible && AUTO_HIDE) {
-                            // Schedule a hide().
-                            delayedHide(AUTO_HIDE_DELAY_MILLIS);
-                        }
-                    }
-                });
-
-        // Set up the user interaction to manually show or hide the system UI.
-        contentView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (TOGGLE_ON_CLICK) {
-                    mSystemUiHider.toggle();
-                } else {
-                    mSystemUiHider.show();
-                }
-            }
-        });
-
-        // Upon interacting with UI controls, delay any scheduled hide()
-        // operations to prevent the jarring behavior of controls going away
-        // while interacting with the UI.
-        //findViewById(R.id.).setOnTouchListener(mDelayHideTouchListener);
-*/
-        // Populate Elements after the view is created, so the size is known.
+        if(mAudioUri!=null){
+            CheckBox sound=(CheckBox)findViewById(R.id.checkbox_sound);
+            sound.setChecked(true);
+        }
         populateElements();
     }
 
     @Override
     public View onCreateView (View parent, String name, Context context, AttributeSet attrs) {
         View root = super.onCreateView(parent, name, context, attrs);
-
 
         return root;
     }
@@ -184,12 +139,6 @@ public class AddMarkerActivity extends Activity {
     }
 
     private void populateElements () {
-        Intent i = getIntent();
-        mPictureUri = i.getStringExtra(PIC_URI_KEY);
-        mAudioUri   = i.getStringExtra(AUDIO_URI_KEY);
-        mLocation = i.getStringExtra(LOCATION_KEY);
-        mTimestamp = i.getStringExtra(TIMESTAMP_KEY);
-
         if (BuildConfig.DEBUG) { Log.d(TAG, "picture: " + mPictureUri); }
         if (BuildConfig.DEBUG) { Log.d(TAG, "audio: " + mAudioUri); }
         if (BuildConfig.DEBUG) { Log.d(TAG, "location: " + mLocation); }
@@ -229,6 +178,8 @@ public class AddMarkerActivity extends Activity {
                             Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
 
                     startActivityForResult(gallery, RESULT_LOAD_IMAGE);
+                    CheckBox sight=(CheckBox)findViewById(R.id.checkbox_sight);
+                    sight.setChecked(true);
                 }
 
             });
@@ -282,6 +233,33 @@ public class AddMarkerActivity extends Activity {
     private void addMarkerToDB(){
         EditText note= (EditText)findViewById(R.id.message_field);
         mNote=note.getText().toString();
+        String tempNote=mNote;
+
+        CheckBox sight=(CheckBox)findViewById(R.id.checkbox_sight);
+        CheckBox sound=(CheckBox)findViewById(R.id.checkbox_sound);
+        CheckBox scent=(CheckBox)findViewById(R.id.checkbox_scent);
+        CheckBox story=(CheckBox)findViewById(R.id.checkbox_text);
+        CheckBox other=(CheckBox)findViewById(R.id.checkbox_other);
+
+        if (sight.isChecked()){
+            mNote+="====1";
+        }
+
+        if (sound.isChecked()){
+            mNote+="====2";
+        }
+
+        if (tempNote!=null &&story.isChecked()){
+            mNote+="====3";
+        }
+
+        if (tempNote!=null && scent.isChecked()){
+            mNote+="====4";
+        }
+
+        if (other.isChecked()||(!sight.isChecked()&&!scent.isChecked()&&!story.isChecked()&&!scent.isChecked())){
+            mNote+="====5";
+        }
 
         EditText title= (EditText)findViewById(R.id.location_field);
         mTitle=title.getText().toString();

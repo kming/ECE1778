@@ -423,14 +423,39 @@ public class MapsActivity extends FragmentActivity {
                     for (MarkerTableEntry entry : entries) {
                         String location = entry.getLocation();
                         String titleString = entry.getTitle();
-                        String snippetString = entry.getNote()+ ",.,." + entry.getPicture()
+                        String[] snippet=entry.getNote().split("====");
+                        String snippetString = snippet[0]+ ",.,." + entry.getPicture()
                                 +",.,."+entry.getAudio()+",.,."+entry.getTime();
+
+                        float hue;
+                        if(snippet.length>1) {
+                            if (snippet[1].equals("1")) {
+                                //if sight
+                                hue = BitmapDescriptorFactory.HUE_AZURE;
+                            } else if (snippet[1].equals("2")) {
+                                //if sound
+                                hue = BitmapDescriptorFactory.HUE_GREEN;
+                            } else if (snippet[1].equals("3")) {
+                                //if story
+                                hue = BitmapDescriptorFactory.HUE_YELLOW;
+                            } else if (snippet[1].equals("4")) {
+                                //if scent
+                                hue = BitmapDescriptorFactory.HUE_ORANGE;
+                            } else {
+                                //all other
+                                hue = BitmapDescriptorFactory.HUE_RED;
+                            }
+                        }else{
+                            hue = BitmapDescriptorFactory.HUE_RED;
+                        }
 
                         // TODO: Need to add and save the marker.  Otherwise no other way to add info to marker
                         mk = mMap.addMarker(new MarkerOptions()
                                         .position(GeneralUtils.stringToLocation(location))
                                         .title(titleString)
                                         .snippet(snippetString)
+                                        //BitmapDescriptorFactory.HUE_AZURE
+                                        .icon(BitmapDescriptorFactory.defaultMarker(hue))
                         );
                         markerList.put(mk.getPosition(), mk);
                     }
@@ -631,18 +656,18 @@ public class MapsActivity extends FragmentActivity {
         if (fogOnOff.isChecked()) {
             // Populate Fog -  If holes overlap --> Causes Fog to not draw
             Polygon polygon = mMap.addPolygon(new PolygonOptions()
-                .add(new LatLng(90, -180),
-                        new LatLng(-90 + delta, -180 + delta),
-                        new LatLng(-90 + delta, 0),
-                        new LatLng(-90 + delta, 180 - delta),
-                        new LatLng(0, 180 - delta),
-                        new LatLng(90 - delta, 180 - delta),
-                        new LatLng(90 - delta, 0),
-                        new LatLng(90 - delta, -180 + delta),
-                        new LatLng(0, -180 + delta))
-                //.strokeWidth(0)
-                .strokeColor(Color.TRANSPARENT)
-                .fillColor(Color.argb(200, 255, 255, 255)));
+                    .add(new LatLng(90, -180),
+                            new LatLng(-90 + delta, -180 + delta),
+                            new LatLng(-90 + delta, 0),
+                            new LatLng(-90 + delta, 180 - delta),
+                            new LatLng(0, 180 - delta),
+                            new LatLng(90 - delta, 180 - delta),
+                            new LatLng(90 - delta, 0),
+                            new LatLng(90 - delta, -180 + delta),
+                            new LatLng(0, -180 + delta))
+                            //.strokeWidth(0)
+                    .strokeColor(Color.TRANSPARENT)
+                    .fillColor(Color.argb(200, 255, 255, 255)));
 
             ArrayList<LocTableEntry> entries = LocationDBManager.getManager(this).getAllValues();
             ArrayList<ArrayList<LatLng>> holes = new ArrayList<ArrayList<LatLng>>();

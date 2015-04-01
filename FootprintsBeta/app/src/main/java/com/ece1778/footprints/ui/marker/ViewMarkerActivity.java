@@ -288,7 +288,7 @@ public class ViewMarkerActivity extends Activity {
     public void deleteMarker(View v){
 
         AlertDialog.Builder adBuilder = new AlertDialog.Builder(this);
-        adBuilder.setMessage("Delete this marker?").setCancelable(true);
+        adBuilder.setMessage("Delete this landmark permanently?").setCancelable(true);
         adBuilder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
