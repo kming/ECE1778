@@ -14,61 +14,54 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:backgroundTint="@color/background_color">
-        <ImageView
-            android:id="@+id/landmark_image"
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            android:scaleType="centerCrop"
-            />
-
-        <RelativeLayout
-            android:id="@+id/floating_text_box"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:background="@color/white_overlay"
-            android:layout_above="@+id/toggleButton"
-            android:layout_alignParentLeft="true">
-
-            <TextView
-                android:id="@+id/landmark_title"
-                android:textColor="@color/body_text_color"
-                android:textSize="18dp"
-                android:layout_margin="20dp"
-                android:text="TESTING 123"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_alignParentTop="true"/>
-
-            <TextView
-                android:id="@+id/landmark_description"
-                android:layout_below="@id/landmark_title"
-                android:textColor="@color/body_text_color"
-                android:textSize="14dp"
-                android:text="hello"
-                android:layout_marginLeft="20dp"
-                android:layout_marginBottom="20dp"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-
-        </RelativeLayout>
 
         <FrameLayout
             android:id="@+id/spacer"
             android:layout_width="match_parent"
-            android:layout_height="30dp"/>
+            android:layout_height="40dp"
+            android:layout_alignParentBottom="true"/>
+
+        <ImageView
+            android:id="@+id/landmark_image"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:scaleType="centerCrop"/>
+
+        <TextView
+            android:id="@+id/landmark_description"
+            android:textColor="@color/body_text_color"
+            android:textSize="14dp"
+            android:text=""
+            android:paddingLeft="20dp"
+            android:paddingBottom="20dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_above="@id/spacer"/>
+
+        <TextView
+            android:id="@+id/landmark_title"
+            android:textColor="@color/body_text_color"
+            android:textSize="18dp"
+            android:padding="20dp"
+            android:background="@color/white_overlay"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_above="@id/landmark_description"/>
 
         <ToggleButton
-            android:layout_width="150dip"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:layout_centerHorizontal="true"
+            android:id="@+id/toggleSoundButton"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
             android:adjustViewBounds="true"
-            android:background="@null"
-            android:onClick="takePicture"
-            android:padding="30dip"
+            android:onClick="playAudio"
+            android:paddingTop="20dip"
             android:scaleType="fitCenter"
-            android:src="@drawable/default_image_audio_icon"
-            android:id="@+id/toggleButton" />
+            android:textOn=""
+            android:textOff=""
+            android:background="@drawable/audio_playback_state_toggle"
+            android:layout_above="@id/landmark_title"
+            android:layout_centerHorizontal="true"/>
+
     </RelativeLayout>
 
 </FrameLayout>

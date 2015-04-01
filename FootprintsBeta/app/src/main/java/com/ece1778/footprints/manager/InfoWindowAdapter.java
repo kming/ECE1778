@@ -59,7 +59,7 @@ public class InfoWindowAdapter implements GoogleMap.InfoWindowAdapter {
 
             imageViewIcon = (ImageView)v.findViewById(R.id.balloon_item_image);
 
-            if (imageURI != null) {
+            if (imageURI != null && !imageURI.equals("null")) {
                 try {
                     ExifInterface exifInterface = new ExifInterface(Uri.parse(imageURI).getPath());
                     if (exifInterface.hasThumbnail()) {
@@ -79,12 +79,13 @@ public class InfoWindowAdapter implements GoogleMap.InfoWindowAdapter {
                     if (BuildConfig.DEBUG) {
                         Log.e(TAG, e.getMessage());
                     }
+                    imageViewIcon.setImageResource(R.drawable.ic_launcher);
                 } catch (IOException e) {
                     if (BuildConfig.DEBUG) {
                         Log.e(TAG, e.getMessage());
                     }
                 }
-            } else if (audioURI!=null) {
+            } else if (!audioURI.equals("null")) {
                 //in case where no photo but has audio
                 imageViewIcon.setImageResource(R.drawable.default_image_audio_icon);
             }else{

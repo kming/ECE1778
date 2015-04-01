@@ -3,16 +3,39 @@ package com.ece1778.footprints.ui.marker;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.media.AudioManager;
+import android.media.ExifInterface;
+import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.MediaStore;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.MenuItem;
 import android.support.v4.app.NavUtils;
+import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.ToggleButton;
 
+import com.ece1778.footprints.BuildConfig;
 import com.ece1778.footprints.R;
+import com.ece1778.footprints.util.FileUtils;
 import com.ece1778.footprints.util.fullscreenUtil.SystemUiHider;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+
+import static com.ece1778.footprints.util.FileUtils.decodeSampledBitmapFromFile;
 
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
@@ -49,6 +72,16 @@ public class ViewMarkerActivity extends Activity {
      */
     private SystemUiHider mSystemUiHider;
 
+    public static final String IMAGE_KEY = "image";
+    public static final String AUDIO_KEY = "audio";
+    public static final String TITLE_KEY = "title";
+    public static final String NOTE_KEY = "note";
+
+    private static final String TAG = ViewMarkerActivity.class.getName();
+
+    private AudioManager am = null;
+    MediaPlayer mediaPlayer = null;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -58,6 +91,76 @@ public class ViewMarkerActivity extends Activity {
 
         //final View controlsView = findViewById(R.id.fullscreen_content_controls);
         final View contentView = findViewById(R.id.fullscreen_view);
+
+        Intent iOrigin = getIntent();
+
+        ImageView imageView=(ImageView)findViewById(R.id.landmark_image);
+        Uri mPictureUri = Uri.parse(iOrigin.getStringExtra(IMAGE_KEY));
+
+        if (mPictureUri != null) {
+
+            File file = new File(mPictureUri.getPath());
+
+            if (file.exists()) {
+                imageView.setImageBitmap(FileUtils.decodeFile(file, 500));
+            } else {
+                imageView.setImageResource(R.drawable.default_image);
+            }
+        } else {
+            // In the case where no photo, set default picture.
+            // TODO: Look into creating a snapshot of the google maps and using that instead.
+            imageView.setImageResource(R.drawable.default_image);
+
+
+ /*           imageView.setOnClickListener(new View.OnClickListener() {
+
+                @Override
+                public void onClick(View view) {
+                    Intent gallery = new Intent(
+                            Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+
+                    startActivityForResult(gallery, RESULT_LOAD_IMAGE);
+                }
+
+            });
+*/
+        }
+
+        String savedTitle=iOrigin.getStringExtra(TITLE_KEY);
+        TextView title = (TextView) findViewById(R.id.landmark_title);
+        if (!savedTitle.isEmpty()) {
+            title.setVisibility(View.VISIBLE);
+            title.setText(savedTitle);
+        }else{
+            title.setVisibility(View.INVISIBLE);
+        }
+
+        String savedNote=iOrigin.getStringExtra(NOTE_KEY);
+        TextView note = (TextView) findViewById(R.id.landmark_description);
+        if (!savedNote.isEmpty()) {
+            note.setVisibility(View.VISIBLE);
+            note.setText(savedNote);
+        }else{
+            note.setVisibility(View.INVISIBLE);
+        }
+
+        String savedAudio=iOrigin.getStringExtra(AUDIO_KEY);
+        ToggleButton audioPlaybackState=(ToggleButton)findViewById(R.id.toggleSoundButton);
+        if (BuildConfig.DEBUG) {
+            Log.d(TAG, "savedAudio:"+ savedAudio);
+        }
+        if (!savedAudio.equals("null")) {
+            audioPlaybackState.setVisibility(View.VISIBLE);
+            audioPlaybackState.setChecked(false);
+            mediaPlayer = MediaPlayer.create(this, Uri.parse(savedAudio));
+        }else{
+            audioPlaybackState.setVisibility(View.INVISIBLE);
+        }
+
+        this.setVolumeControlStream(AudioManager.STREAM_MUSIC);
+        am = (AudioManager) this.getSystemService(Context.AUDIO_SERVICE);
+
+
 
         // Set up an instance of SystemUiHider to control the system UI for
         // this activity.
@@ -116,6 +219,9 @@ public class ViewMarkerActivity extends Activity {
     @Override
     protected void onStop() {
         super.onStop();
+        if(mediaPlayer!=null) {
+            stopMusic();
+        }
     }
 
     /**
@@ -179,4 +285,75 @@ public class ViewMarkerActivity extends Activity {
         mHideHandler.removeCallbacks(mHideRunnable);
         mHideHandler.postDelayed(mHideRunnable, delayMillis);
     }
+
+
+    public void playAudio(View v){
+        boolean on = ((ToggleButton) v).isChecked();
+
+        if (on) {
+            playMusic();
+        } else {
+            mediaPlayer.pause();
+        }
+
+    }
+
+    private void playMusic () {
+        int result = am.requestAudioFocus(afChangeListener,
+                // Use the music stream.
+                AudioManager.STREAM_MUSIC,
+                // Request permanent focus.
+                AudioManager.AUDIOFOCUS_GAIN);
+        final AlertDialog.Builder alertDialogBuilder;
+        if (am.getStreamVolume(AudioManager.STREAM_MUSIC) == 0) {
+
+            alertDialogBuilder = new AlertDialog.Builder(this);
+            // set dialog message
+            alertDialogBuilder.setMessage("Turn up volume for full experience").setCancelable(true);
+            alertDialogBuilder.setPositiveButton(android.R.string.ok,
+                    new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            // continue with delete
+                            dialog.dismiss();
+                        }
+                    });
+            // create alert dialog
+            AlertDialog alertDialog = alertDialogBuilder.create();
+
+            alertDialog.show();
+        }
+        if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+            startPlayback();
+        }
+    }
+
+    private void stopMusic () {
+        // Abandon audio focus when playback complete
+        am.abandonAudioFocus(afChangeListener);
+        stopPlayback();
+    }
+
+    private void startPlayback () {
+
+        mediaPlayer.setLooping(true);
+        mediaPlayer.start(); // no need to call prepare(); create() does that for you
+    }
+
+    private void stopPlayback () {
+        if (mediaPlayer.isPlaying()) {
+            mediaPlayer.stop();
+        }
+    }
+    AudioManager.OnAudioFocusChangeListener afChangeListener = new AudioManager.OnAudioFocusChangeListener() {
+        public void onAudioFocusChange(int focusChange) {
+            if (focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT){
+                stopPlayback();
+            } else if (focusChange == AudioManager.AUDIOFOCUS_GAIN) {
+                startPlayback();
+            } else if (focusChange == AudioManager.AUDIOFOCUS_LOSS) {
+                am.abandonAudioFocus(afChangeListener);
+                stopPlayback();
+            }
+        }
+    };
 }

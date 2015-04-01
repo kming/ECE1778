@@ -81,6 +81,7 @@ public class MarkerScrollAdapter extends RecyclerView.Adapter<MarkerScrollAdapte
                 if (BuildConfig.DEBUG) {
                     Log.e(TAG, e.getMessage());
                 }
+                markerScrollViewHolder.vImage.setImageResource(R.drawable.default_image);
             } catch (IOException e) {
                 if (BuildConfig.DEBUG) {
                     Log.e(TAG, e.getMessage());

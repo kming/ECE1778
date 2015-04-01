@@ -608,9 +608,15 @@ public class MapsActivity extends FragmentActivity {
 
     public void onInfoWindowClickDo(Marker marker) {
         if (marker.getTitle() != null) {
+            String title=marker.getTitle();
+            String[] snippet=marker.getSnippet().split(",.,.");
+            if (BuildConfig.DEBUG) { Log.d (TAG, "Snippet: " + marker.getSnippet()); }
             Intent i = new Intent(this, ViewMarkerActivity.class);
-            //i.putExtra(ViewMarkerActivity.LOCATION_KEY, GeneralUtils.locationToString(location));
-            //i.putExtra(ViewMarkerActivity.TIMESTAMP_KEY, timeString);
+            i.putExtra(ViewMarkerActivity.IMAGE_KEY, snippet[1]);
+            i.putExtra(ViewMarkerActivity.AUDIO_KEY, snippet[2]);
+            i.putExtra(ViewMarkerActivity.TITLE_KEY, title);
+            i.putExtra(ViewMarkerActivity.NOTE_KEY,snippet[0]);
+
             startActivity(i);
         }
         return;
