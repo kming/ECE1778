@@ -24,16 +24,24 @@ import android.view.MenuItem;
 import android.support.v4.app.NavUtils;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.ToggleButton;
 
 import com.ece1778.footprints.BuildConfig;
 import com.ece1778.footprints.R;
+import com.ece1778.footprints.database.LocTableEntry;
+import com.ece1778.footprints.database.LocationDBManager;
+import com.ece1778.footprints.database.MarkerDBManager;
+import com.ece1778.footprints.database.MarkerTableEntry;
+import com.ece1778.footprints.ui.MapsActivity;
 import com.ece1778.footprints.util.FileUtils;
 import com.ece1778.footprints.util.fullscreenUtil.SystemUiHider;
+import com.google.android.gms.maps.model.LatLng;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import static com.ece1778.footprints.util.FileUtils.decodeSampledBitmapFromFile;
 
@@ -76,6 +84,9 @@ public class ViewMarkerActivity extends Activity {
     public static final String AUDIO_KEY = "audio";
     public static final String TITLE_KEY = "title";
     public static final String NOTE_KEY = "note";
+    public static final String TIME_KEY = "time";
+
+    public String savedTime;
 
     private static final String TAG = ViewMarkerActivity.class.getName();
 
@@ -93,10 +104,12 @@ public class ViewMarkerActivity extends Activity {
         final View contentView = findViewById(R.id.fullscreen_view);
 
         Intent iOrigin = getIntent();
+        savedTime=iOrigin.getStringExtra(TIME_KEY);
+        Uri mPictureUri = Uri.parse(iOrigin.getStringExtra(IMAGE_KEY));
+        String savedTitle=iOrigin.getStringExtra(TITLE_KEY);
+        String savedNote=iOrigin.getStringExtra(NOTE_KEY);
 
         ImageView imageView=(ImageView)findViewById(R.id.landmark_image);
-        Uri mPictureUri = Uri.parse(iOrigin.getStringExtra(IMAGE_KEY));
-
         if (mPictureUri != null) {
 
             File file = new File(mPictureUri.getPath());
@@ -111,22 +124,8 @@ public class ViewMarkerActivity extends Activity {
             // TODO: Look into creating a snapshot of the google maps and using that instead.
             imageView.setImageResource(R.drawable.default_image);
 
-
- /*           imageView.setOnClickListener(new View.OnClickListener() {
-
-                @Override
-                public void onClick(View view) {
-                    Intent gallery = new Intent(
-                            Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-
-                    startActivityForResult(gallery, RESULT_LOAD_IMAGE);
-                }
-
-            });
-*/
         }
 
-        String savedTitle=iOrigin.getStringExtra(TITLE_KEY);
         TextView title = (TextView) findViewById(R.id.landmark_title);
         if (!savedTitle.isEmpty()) {
             title.setVisibility(View.VISIBLE);
@@ -135,7 +134,6 @@ public class ViewMarkerActivity extends Activity {
             title.setVisibility(View.INVISIBLE);
         }
 
-        String savedNote=iOrigin.getStringExtra(NOTE_KEY);
         TextView note = (TextView) findViewById(R.id.landmark_description);
         if (!savedNote.isEmpty()) {
             note.setVisibility(View.VISIBLE);
@@ -287,6 +285,43 @@ public class ViewMarkerActivity extends Activity {
     }
 
 
+    public void deleteMarker(View v){
+
+        AlertDialog.Builder adBuilder = new AlertDialog.Builder(this);
+        adBuilder.setMessage("Delete this marker?").setCancelable(true);
+        adBuilder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+
+                ArrayList<MarkerTableEntry> entries = MarkerDBManager.getManager(ViewMarkerActivity.this).getAllValues();
+                String time=new String();
+
+                // From the locations, determine which grid it belongs in.
+                for (MarkerTableEntry entry : entries) {
+                    time = entry.getTime();
+                    if (time.equals(savedTime)){
+                        MarkerDBManager.getManager(ViewMarkerActivity.this).deleteValue(entry);
+                        Toast.makeText(ViewMarkerActivity.this, "deleted", Toast.LENGTH_SHORT).show();
+                        break;
+                    }
+                }
+                Intent i = new Intent(ViewMarkerActivity.this, MapsActivity.class);
+                startActivity(i);
+                dialog.dismiss();
+            }
+        });
+        adBuilder.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+        AlertDialog alertDialog = adBuilder.create();
+        alertDialog.show();
+
+        return;
+    }
+
     public void playAudio(View v){
         boolean on = ((ToggleButton) v).isChecked();
 
@@ -295,7 +330,7 @@ public class ViewMarkerActivity extends Activity {
         } else {
             mediaPlayer.pause();
         }
-
+        return;
     }
 
     private void playMusic () {

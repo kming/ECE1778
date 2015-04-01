@@ -423,7 +423,8 @@ public class MapsActivity extends FragmentActivity {
                     for (MarkerTableEntry entry : entries) {
                         String location = entry.getLocation();
                         String titleString = entry.getTitle();
-                        String snippetString = entry.getNote()+ ",.,." + entry.getPicture()+",.,."+entry.getAudio();
+                        String snippetString = entry.getNote()+ ",.,." + entry.getPicture()
+                                +",.,."+entry.getAudio()+",.,."+entry.getTime();
 
                         // TODO: Need to add and save the marker.  Otherwise no other way to add info to marker
                         mk = mMap.addMarker(new MarkerOptions()
@@ -616,6 +617,7 @@ public class MapsActivity extends FragmentActivity {
             i.putExtra(ViewMarkerActivity.AUDIO_KEY, snippet[2]);
             i.putExtra(ViewMarkerActivity.TITLE_KEY, title);
             i.putExtra(ViewMarkerActivity.NOTE_KEY,snippet[0]);
+            i.putExtra(ViewMarkerActivity.TIME_KEY,snippet[3]);
 
             startActivity(i);
         }
